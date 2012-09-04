@@ -1,4 +1,2 @@
-xyjs
-====
-
-xy javascript toolkit
+＃ 简介 ＃
+* 个人 js 学习积累。
