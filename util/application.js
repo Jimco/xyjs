@@ -16,7 +16,7 @@
   XY.isIE6 = XY.isIE && !window.XMLHttpRequest;
 
   XY.ability = {
-    placeholder:function(){ return 'placeholder' in DOC.createElement("input"); }(),
+    placeholder: function(){ return 'placeholder' in DOC.createElement("input"); }(),
     flash:function(){
         var plg = navigator.plugins ;
         return plg.length > 0 && function(){
@@ -28,17 +28,17 @@
 	    return false;
           }() ;
     }(),
-    audioMp3Supported:function(){
+    audioMp3Supported: function(){
       if( typeof HTMLAudioElement === 'function' || typeof HTMLAudioElement === 'object' ){
         var a = new Audio();
         return a.canPlayType("audio/mpeg");
       }
       return false;
     }(),
-    localStorage:function(){
+    localStorage: function(){
       return !!window.localStorage;
     }(),
-    fixedSupport:function(){
+    fixedSupport: function(){
       var div = DOC.createElement("div") ,
           divstyle = div.style ;
       divstyle.cssText = "position:absolute;position:fixed;"

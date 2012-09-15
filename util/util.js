@@ -13,7 +13,7 @@
         return window.JSON ? JSON.parse( o ) : eval( "(" + o + ')' );
       }else{
         return o ;
-      }
+      } 
     },
     //JSON对象转换为JSON字符串
     decodeJSON: function (json) {
@@ -63,37 +63,37 @@
     //JS Cookie操作（设置，读取，删除）
     setCookie: function(name,value,time){
       var date = new Date();
-        date.setTime(date.getTime() + time*24*60*60*1000);
+      date.setTime(date.getTime() + time*24*60*60*1000);
       document.cookie = name + "=" + value + "; expires=" + date.toGMTString()+"; path=/";
     },
     getCookie: function(name) { 
-        var search = name + "=";
-        if(document.cookie.length > 0){ 
-            offset = document.cookie.indexOf(search); 
-            if(offset != -1){ 
-                offset += search.length; 
-                end = document.cookie.indexOf(";",offset); 
-                if(end == -1) end = document.cookie.length;
-                return document.cookie.substring(offset, end); 
-            }else{
-              return ""; 
-            }
-        }else{
-          return "";
-        }
+      var search = name + "=";
+      if(document.cookie.length > 0){ 
+        offset = document.cookie.indexOf(search); 
+          if(offset != -1){ 
+            offset += search.length; 
+            end = document.cookie.indexOf(";",offset); 
+            if(end == -1) end = document.cookie.length;
+            return document.cookie.substring(offset, end); 
+          }else{
+            return ""; 
+          }
+      }else{
+        return "";
+      }
     },
     //以下为根据浏览器的不同解决光标停在最后记录上
-    focusLastTextArea: function(objContentId){
-      var element=document.getElementById(objContentId);
+    focusLastTextArea: function( objContentId ){
+      var element = document.getElementById( objContentId );
       if (document.all){
-            var range= element.createTextRange();
-            range.collapse(false);
-            range.select();
-        }else {
-            element.focus();
-            var v= element.value;
-            element.value= '';
-            element.value= v;
+        var range = element.createTextRange();
+        range.collapse(false);
+        range.select();
+      }else {
+        element.focus();
+        var v = element.value;
+        element.value= '';
+        element.value= v;
        }
     },
     
@@ -130,55 +130,54 @@
       var parent = null;
       var pos = [];
       var box;
-      if (el.getBoundingClientRect) //IE
-      {
-          box = el.getBoundingClientRect();
-          var scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
-          var scrollLeft = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
-          return {
-              x: box.left + scrollLeft,
-              y: box.top + scrollTop
-          };
+      if (el.getBoundingClientRect){ // IE
+        box = el.getBoundingClientRect();
+        var scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+        var scrollLeft = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
+        return {
+          x: box.left + scrollLeft,
+          y: box.top + scrollTop
+        };
       } else if (document.getBoxObjectFor) {
-          box = document.getBoxObjectFor(el);
-          var borderLeft = (el.style.borderLeftWidth) ? parseInt(el.style.borderLeftWidth) : 0;
-          var borderTop = (el.style.borderTopWidth) ? parseInt(el.style.borderTopWidth) : 0;
-          pos = [box.x - borderLeft, box.y - borderTop];
-      } else // safari & opera    
-      {
-          pos = [el.offsetLeft, el.offsetTop];
-          parent = el.offsetParent;
-          if (parent != el) {
-              while (parent) {
-                  pos[0] += parent.offsetLeft;
-                  pos[1] += parent.offsetTop;
-                  parent = parent.offsetParent;
-              }
+        box = document.getBoxObjectFor(el);
+        var borderLeft = (el.style.borderLeftWidth) ? parseInt(el.style.borderLeftWidth) : 0;
+        var borderTop = (el.style.borderTopWidth) ? parseInt(el.style.borderTopWidth) : 0;
+        pos = [box.x - borderLeft, box.y - borderTop];
+      } else {// safari & opera    
+        pos = [el.offsetLeft, el.offsetTop];
+        parent = el.offsetParent;
+        if (parent != el) {
+          while (parent) {
+            pos[0] += parent.offsetLeft;
+            pos[1] += parent.offsetTop;
+            parent = parent.offsetParent;
           }
-          if (ua.indexOf('opera') != -1 || (ua.indexOf('safari') != -1 && el.style.position == 'absolute')) {
-              pos[0] -= document.body.offsetLeft;
-              pos[1] -= document.body.offsetTop;
-          }
+        }
+        if (ua.indexOf('opera') != -1 || (ua.indexOf('safari') != -1 && el.style.position == 'absolute')) {
+          pos[0] -= document.body.offsetLeft;
+          pos[1] -= document.body.offsetTop;
+        }
       }
       if (el.parentNode) {
-          parent = el.parentNode;
+        parent = el.parentNode;
       } else {
-          parent = null;
+        parent = null;
       }
       while (parent && parent.tagName != 'BODY' && parent.tagName != 'HTML') { // account for any scrolled ancestors
-            pos[0] -= parent.scrollLeft;
-            pos[1] -= parent.scrollTop;
-            if (parent.parentNode) {
-                parent = parent.parentNode;
-            } else {
-                parent = null;
-            }
+        pos[0] -= parent.scrollLeft;
+        pos[1] -= parent.scrollTop;
+        if (parent.parentNode) {
+            parent = parent.parentNode;
+        } else {
+            parent = null;
         }
-        return {
-            x: pos[0],
-            y: pos[1]
-        };
+      }
+      return {
+        x: pos[0],
+        y: pos[1]
+      };
     },
+    
     loadImgResize: function(obj){
       var image = new Image();
       image.onload = function(){
@@ -247,14 +246,14 @@
    * XY.stringUtil.getContentLength(str, true); //返回计算短连接之后的中英文总字数 
    */
   XY.stringUtil = {
-    'byteLength' : function(str){
+    byteLength : function(str){
       if (typeof str == "undefined") {
         return 0;
       }
       var a = str.match(/[^\x00-\x80]/g);
       return (str.length + (!a ? 0 : a.length));
     },
-    'getContentLength' : function(content, shortUrl){
+    getContentLength : function(content, shortUrl){
       var contentLength = content.length;
       if(contentLength == 0)
         return 0;
