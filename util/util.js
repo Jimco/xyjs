@@ -7,7 +7,7 @@
 (function( XY ){
 
   XY.Util = {
-    //JSON字符串转换为JSON对象
+    // JSON字符串转换为JSON对象
     encodeJSON:function( o ){
       if ( typeof o === 'string' ){
         return window.JSON ? JSON.parse( o ) : eval( "(" + o + ')' );
@@ -15,7 +15,7 @@
         return o ;
       } 
     },
-    //JSON对象转换为JSON字符串
+    // JSON对象转换为JSON字符串
     decodeJSON: function (json) {
       if (window.JSON && window.JSON.stringify) {
         return JSON.stringify(json);
@@ -48,7 +48,7 @@
         }
       }
     },
-    //判断是否为 NaN
+    // 判断是否为 NaN
     isNaN : function( o ){
       return o !== o ;
     },
@@ -56,11 +56,11 @@
     replaceAll: function (src, oldStr, newStr) {
       return src.replace(new RegExp(oldStr,"g"),newStr);   
     },   
-    //特殊字符转义  (&gt; to >)   (&amp; to &) ...
+    // 特殊字符转义  (&gt; to >)   (&amp; to &) ...
     decodingHtml: function(value){
       return $('<span/>').html(value).text();
     },  
-    //JS Cookie操作（设置，读取，删除）
+    // JS Cookie操作（设置，读取，删除）
     setCookie: function(name,value,time){
       var date = new Date();
       date.setTime(date.getTime() + time*24*60*60*1000);
@@ -82,7 +82,7 @@
         return "";
       }
     },
-    //以下为根据浏览器的不同解决光标停在最后记录上
+    // 以下为根据浏览器的不同解决光标停在最后记录上
     focusLastTextArea: function( objContentId ){
       var element = document.getElementById( objContentId );
       if (document.all){
@@ -114,7 +114,7 @@
         el.setSelectionRange(st,end);
       }
     },
-    //获取指定元素坐标
+    // 获取指定元素坐标
     getElementPos: function (target) {
       var ua = navigator.userAgent.toLowerCase();
       var isOpera = (ua.indexOf('opera') != -1);
@@ -192,7 +192,7 @@
       }
       image.src = obj.src;
     },
-    //数组去重复
+    // 数组去重复
     distinctEl: function(obj) {
       var tempArray = [];
       var temp = "";
@@ -211,6 +211,30 @@
         }
       }
       return tempArray;
+    },
+    // 对象深度克隆
+    clone: function(obj){
+      var o;
+      if(typeof obj == "object"){
+        if(obj === null){
+          o = null;
+        }else{
+          if(obj instanceof Array){
+            o = [];
+            for(var i = 0, len = obj.length; i<len; i++){
+              o.push(clone( obj[i] ));
+            }
+          }else{
+            o = {};
+            for(var j in obj){
+              o[j] = clone(obj[j])
+            }
+          }
+        }
+      }else{
+        o = obj;
+      }
+      return o;
     },
 
     /**
