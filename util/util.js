@@ -222,12 +222,12 @@
           if(obj instanceof Array){
             o = [];
             for(var i = 0, len = obj.length; i<len; i++){
-              o.push(clone( obj[i] ));
+              o.push(arguments.callee( obj[i] ));
             }
           }else{
             o = {};
             for(var j in obj){
-              o[j] = clone(obj[j])
+              o[j] = arguments.callee(obj[j])
             }
           }
         }
