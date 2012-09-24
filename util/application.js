@@ -1,7 +1,7 @@
 /**
- * application
- * By xiejiancong.com
- * 2012-09-04
+ * Application
+ * Author: xiejiancong.com
+ * Date: 2012-09-04
  */
 
 (function(W){

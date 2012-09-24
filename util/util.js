@@ -1,7 +1,9 @@
 /**
  * 公共的工具js
- * By xiejiancong.com
- * 2012-08-20
+ * Author: xiejiancong.com
+ * Date: 2012-08-20
+ * require:
+ *  application.js
  */
 
 (function( XY ){
