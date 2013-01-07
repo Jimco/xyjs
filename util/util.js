@@ -61,7 +61,20 @@
     // 特殊字符转义  (&gt; to >)   (&amp; to &) ...
     decodingHtml: function(value){
       return $('<span/>').html(value).text();
-    },  
+    },
+    // HTML编码
+    encodeHTML: function(text){
+      return String(text).replace(/["<>& ]/g, function(all){
+        return "&" + {
+            '"': 'quot',
+            '<': 'lt',
+            '>': 'gt',
+            '&': 'amp',
+            ' ': 'nbsp'
+        }[all] + ";";
+      });
+    },
+    
     // JS Cookie操作（设置，读取，删除）
     setCookie: function(name,value,time){
       var date = new Date();
