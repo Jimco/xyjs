@@ -91,8 +91,9 @@
   * 模版
   */
   XY.template = function( html , data , reg ){
-    var reg = reg ||  /\{([\w-]+)\}/g ;
+    var reg = reg || /\{([\w-]+)\}/g;
     return html.replace( reg, function( m , name ){
+      console.log(m +'-'+ name);
       if( data[name] !== undefined ){
         var ret ;
         if(data[name] instanceof Function){
@@ -101,11 +102,33 @@
           ret =  data[name];
         }
         return reg.test( ret ) ?  
-          M.template( ret , data , reg ) : ret ;                  
+          XY.template( ret , data , reg ) : ret ;                  
       }else{
         return "" ;
       }
     });
+  };
+
+  /**
+   * @author jimco
+   * @params [str: html/idselector, data: JSON]
+   */
+  XY.tpl = function (str, data){
+    var fn = !/\W/.test(str) ? XY.tpl(document.getElementById(str).innerHTML) :
+      new Function("obj",
+        "var p=[],print=function(){p.push.apply(p,arguments);};" +
+        "with(obj){p.push('" +
+        str
+          .replace(/[\r\t\n]/g, " ")
+          .split("\{").join("\t")
+          .replace(/((^|\})[^\t]*)'/g, "$1\r")
+          .replace(/\t(.*?)\}/g, "',$1,'")
+          .split("\t").join("');")
+          .split("\}").join("p.push('")
+          .split("\r").join("\\'")
+      + "');}return p.join('');");
+    
+    return data ? fn( data ) : fn;
   };
 
   //返回当前url或设置转跳 
