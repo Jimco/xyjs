@@ -8,6 +8,14 @@
 
 (function( XY ){
 
+  XY.log = function(content){
+    if(typeof console.log === 'function'){
+      console.log(content);
+    }else{
+      alert(content);
+    }
+  };
+
   XY.Util = {
     // JSON字符串转换为JSON对象
     encodeJSON:function( o ){
