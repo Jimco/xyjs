@@ -58,6 +58,25 @@
         }
       }
     },
+    // 解析XML 跨浏览器
+    parseXML: function(data , xml , tmp) {
+      if(window.DOMParser) { // Standard 标准XML解析器
+        tmp = new DOMParser();
+        xml = tmp.parseFromString( data , "text/xml" );
+      }else{ // IE IE的XML解析器
+        xml = new ActiveXObject( "Microsoft.XMLDOM" );
+        xml.async = "false";
+        xml.loadXML( data );
+      }
+  
+      tmp = xml.documentElement;
+  
+      if(! tmp || ! tmp.nodeName || tmp.nodeName === "parsererror"){
+        XY.log("Invalid XML: " + data);
+      }
+  
+      return xml;
+    },
     // 判断是否为 NaN
     isNaN : function( o ){
       return o !== o ;
