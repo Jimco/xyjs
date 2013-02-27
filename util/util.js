@@ -138,6 +138,54 @@
         b : b
       }
     },
+
+    // 获取元素计算样式 eg: getStyle(elem, 'background-color');
+    getStyle: function( elem, p ){
+      var rPos = /^(left|right|top|bottom)$/,
+        ecma = 'getComputedStyle' in window,
+      // 将中划线转换成驼峰式 如：padding-left => paddingLeft
+      p = p.replace( /\-(\w)/g, function( $, $1 ){
+        return $1.toUpperCase();
+      });
+      // 对float进行处理   
+      p = p === 'float' ? ( ecma ? 'cssFloat' : 'styleFloat' ) : p;
+      
+      return !!elem.style[p] ? 
+        elem.style[p] : 
+        ecma ?
+        function(){
+          var val = getComputedStyle( elem, null )[p];
+          // 处理top、right、bottom、left为auto的情况
+          if( rPos.test(p) && val === 'auto' ){
+            return '0px';
+          }
+          return val;
+        }() :
+        function(){
+          var val =  elem.currentStyle[p];
+          // 获取元素在IE6/7/8中的宽度和高度
+          if( (p === "width" || p === "height") && val === 'auto' ){
+            var rect =  elem.getBoundingClientRect();       
+            return ( p === 'width' ? rect.right - rect.left : rect.bottom - rect.top ) + 'px';
+          }
+          // 获取元素在IE6/7/8中的透明度
+          if( p === 'opacity' ){
+            var filter = elem.currentStyle.filter;
+            if( /opacity/.test(filter) ){
+                val = filter.match( /\d+/ )[0] / 100;
+              return (val === 1 || val === 0) ? val.toFixed(0) : val.toFixed(1);
+            }
+            else if( val === undefined ){
+              return '1';
+            }
+          }
+          // 处理top、right、bottom、left为auto的情况
+          if( rPos.test(p) && val === 'auto' ){
+            return '0px';
+          }
+          return val;
+        }();
+    },
     
     // JS Cookie操作（设置，读取，删除）
     setCookie: function(name,value,time){
