@@ -106,6 +106,7 @@
 
   var browser = detect()
 
+  // 高版本浏览器检测
   if ((browser.msie && browser.version >= 7) ||
       (browser.chrome && browser.version >= 10) ||
       (browser.firefox && browser.version >= 4.0) ||
@@ -113,7 +114,7 @@
       (browser.opera && browser.version >= 10.0)) {
     browser.a = t;
   }
-
+  // 低版本浏览器检测
   else if ((browser.msie && browser.version < 7) ||
       (browser.chrome && browser.version < 10) ||
       (browser.firefox && browser.version < 4.0) ||
