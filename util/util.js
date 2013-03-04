@@ -10,7 +10,7 @@
 
   XY.log = function(content){
     if(typeof console.log === 'function'){
-      console.log(content);
+      console.log(arguments);
     }else{
       alert(content);
     }
