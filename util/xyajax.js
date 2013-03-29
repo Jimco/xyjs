@@ -3,7 +3,7 @@
  * Author: xiejiancong.com
  * Date: 2013-02-28
  * eg:
- * microAjax("/resource/url", function (res) {
+ * xyAjax("/resource/url", function (res) {
  *   alert (res);
  * });
  */
