@@ -16,6 +16,16 @@
     }
   };
 
+  XY.log2 = function(what){
+    try{
+      console.log(what);
+    }
+    catch(e) {}
+    finally {
+      return;
+    }
+  };
+
   XY.Util = {
     // JSON字符串转换为JSON对象
     encodeJSON:function( o ){
@@ -103,7 +113,7 @@
     },
 
     // 接受一个十六进制或RGB的CSS颜色值，返回的是一个包含了r、g、b三个颜色值的对象
-    parseColor: function( val ){
+    parseColor: function(val){
       var r, g, b;
       // 参数为RGB模式时不做进制转换，直接截取字符串即可
       if( /rgb/.test(val) ){
@@ -137,6 +147,10 @@
         g : g,
         b : b
       }
+    },
+
+    randomColor: function(){
+      return '#' + Math.floor(Math.random()*16777215).toString(16);
     },
 
     // 获取元素计算样式 eg: getStyle(elem, 'background-color');
