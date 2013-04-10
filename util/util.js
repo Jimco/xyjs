@@ -401,7 +401,38 @@
         else if ($ele.height() > maxH)
           $ele.height(maxH);
       }
+    },
+
+    // 函数节流
+    throttle: function(opt){
+      var timer = null
+        , t_start
+        , fn = opt.fn
+        , context = opt.context
+        , delay = opt.delay || 100
+        , mustRunDelay = opt.mustRunDelay || 50;
+
+      return function(){
+        var args = arguments
+          , t_curr = +new Date();
+        context = context || this;
+        
+        clearTimeout(timer);
+        if(!t_start){
+          t_start = t_curr;
+        }
+        if(mustRunDelay && t_curr - t_start >= mustRunDelay){
+          fn.apply(context, args);
+          t_start = t_curr;
+        }
+        else {
+          timer = setTimeout(function(){
+            fn.apply(context, args);
+          }, delay);
+        }
+      };
     }
+
   };
 
   /**
