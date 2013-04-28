@@ -85,12 +85,45 @@
       return html.join("&");
     }
   };
-  /*
-  * @author darrel
-  * @params [html:String,data:JSON ]
-  * 模版
-  */
-  XY.template = function( html , data , reg ){
+
+  // 与 XY.params 功能相同，代码更简洁
+  XY.getQueryString = function(url){
+    var result = {}, queryString = (url && url.indexOf("?") != -1 && url.split("?")[1]) || location.search.substring(1)
+      , re = /([^&=]+)=([^&]*)/g, m;
+    while (m = re.exec(queryString)){
+      result[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+    }
+    return result;
+  };
+
+  XY.getJSON = function(url, params, callbackFuncName, callback){
+    var paramsUrl = ''
+      , jsonp = XY.getQueryString(url)[callbackFuncName];
+    for(var key in params){
+      paramsUrl += "&" + key + "=" + encodeURIComponent(params[key]);
+    }
+    url += paramsUrl;
+    window[jsonp] = function(data){
+      window[jsonp] = undefined;
+      try{
+        delete window[jsonp];
+      }catch(e){}
+
+      if(head){
+        head.removeChild(script);
+      }
+      callback(data);
+    };
+
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.charset = "UTF-8";
+    script.src = url;
+    head.appendChild(script);
+    return true;
+  };
+
+  XY.template = function(html , data , reg){
     var reg = reg || /\{([\w-]+)\}/g;
     return html.replace( reg, function( m , name ){
       console.log(m +'-'+ name);
@@ -110,7 +143,6 @@
   };
 
   /**
-   * @author jimco
    * @params [str: html/idselector, data: JSON]
    */
   XY.tpl = function (str, data){
@@ -120,11 +152,11 @@
         "with(obj){p.push('" +
         str
           .replace(/[\r\t\n]/g, " ")
-          .split("\{").join("\t")
-          .replace(/((^|\})[^\t]*)'/g, "$1\r")
-          .replace(/\t(.*?)\}/g, "',$1,'")
+          .split("<%").join("\t")
+          .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+          .replace(/\t=(.*?)%>/g, "',$1,'")
           .split("\t").join("');")
-          .split("\}").join("p.push('")
+          .split("%>").join("p.push('")
           .split("\r").join("\\'")
       + "');}return p.join('');");
     
