@@ -96,13 +96,13 @@
     return result;
   };
 
-  XY.getJSON = function(url, params, callbackFuncName, callback){
+  XY.getJSON = function(url, params, callback){
     var paramsUrl = ''
-      , jsonp = XY.getQueryString(url)[callbackFuncName];
+      , jsonp = /*XY.getQueryString(url)[callbackFuncName]*/'callback' + new Date().getTime();
     for(var key in params){
       paramsUrl += "&" + key + "=" + encodeURIComponent(params[key]);
     }
-    url += paramsUrl;
+    url += paramsUrl + '&callback=' + jsonp;
     window[jsonp] = function(data){
       window[jsonp] = undefined;
       try{
