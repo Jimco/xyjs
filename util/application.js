@@ -3,10 +3,8 @@
  * Author: xiejiancong.com
  * Date: 2012-09-04
  */
-
-(function(W){
-  XY = W.XY ||  {} ;
-  
+(function(window, XY, undefined){
+ 
   var DOC = document;
   
   //判断是否IE浏览器
@@ -273,4 +271,7 @@
       }
     }
   };
-}(window));
+
+  window.XY = XY;
+  
+})(window, window.XY || {});

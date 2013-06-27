@@ -5,8 +5,7 @@
  * require:
  *  application.js
  */
-
-(function( XY ){
+(function(window, XY, undefined){
 
   XY.log = function(content){
     if(typeof console.log === 'function'){
@@ -471,4 +470,4 @@
     }
   };
 
-})(window.XY);
+})(window, window.XY || {});

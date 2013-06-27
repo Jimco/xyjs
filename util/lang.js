@@ -7,7 +7,7 @@
  *  lang-patch.js
  */
  
-(function( XY ){
+(function(window, XY, undefined){
   
   var rValidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g
     , rValidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g
@@ -179,4 +179,6 @@
     return firstStr.toUpperCase() + str.replace( firstStr, '' );
   };
 
-})(window.XY);
+  window.XY = XY;
+
+})(window, window.XY || {});
