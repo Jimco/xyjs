@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Demo</title>
+  <meta name="" content="" />
+
+</head>
+<body>
+  <div class="demo">Hello world !</div>
+
+  <script type="text/javascript" src="application.js"></script>
+  
+  <script type="text/javascript">
+    var obj = {
+          jimco: 222,
+          lucy: {age: 21, gender: 1},
+          jimmy: {a: 22, b: 33}
+        };
+
+    var objHtml = '<ul>'+
+                    '<li>{jimco}:{jimco}</li>'+
+                    '<li>{lucy.age}:{lucy.gender}</li>'+
+                    '<li>{jimmy.a}:{jimmy.b}</li>'+
+                  '</ul>'
+
+    var backHtml = XY.tpl(objHtml, obj);
+    console.log(backHtml);
+
+  </script>
+</body>
+</html>
