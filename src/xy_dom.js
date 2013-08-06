@@ -11,6 +11,7 @@ XY.install('DOM', function(XY){
     , isArray = XY.isArray
     , isString = XY.isString
     , isNodelist = XY.isNodelist
+    , isUndefined = XY.isUndefined
     , DOM = {
         /**
          * query 获取DOM元素
@@ -34,6 +35,23 @@ XY.install('DOM', function(XY){
             return __doc.getElementsByTagName(__selector) || null;
           }
         },
+
+        get: function(selector){
+          var self = this
+            , __selector = self.query(selector);
+
+          if(__selector){
+            if(isArray(__selector) || isNodelist(__selector)){
+              return self.query(selector)[0];
+            }else{
+              return self.query(selector);
+            }
+          }else{
+            return null;
+          }
+
+        },
+
         /**
          * 通过id获取节点元素
          * @param  {String} id 
@@ -107,6 +125,111 @@ XY.install('DOM', function(XY){
           }
 
           return el;
+        },
+
+        css: function(elem, style, value){
+          
+        },
+
+        toggle: function(selector){
+
+        },
+
+        hasClass: function(elem, className){
+          if(!isUndefined(elem)){
+            var  elemClassName = (isString(elem) ? this.get(elem) : elem).className
+              , reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+
+            return reg.test(elemClassName);
+          }
+        },
+
+        addClass: function(elem, className){
+          var self = this
+            , elem = isString(elem) ? self.query(elem) : elem;
+
+          if(isArray(elem)){
+
+            XY.each(elem, function(i){
+              if(!self.hasClass(i, className)){
+                i.className += ' ' + className;
+              }
+            });
+
+          }else{
+
+            if(!isUndefined(elem) && !self.hasClass(elem, className)){
+              elem.className += ' ' + className;
+            }
+
+          }
+        },
+
+        removeClass: function(elem, className){
+          var self = this
+            , elem = isString(elem) ? self.query(elem) : elem;
+
+          if(isArray(elem)){
+
+            XY.each(elem, function(i){
+              if(self.hasClass(i, className)){
+                var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+                i.className = i.className.replace(reg,'');
+              }
+            });
+
+          }else{
+
+            if(!isUndefined(elem) && self.hasClass(i, className)){
+             var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+             elem.className = elem.className.replace(reg, '');
+            }
+
+          }
+
+        },
+
+        toggleClass: function(elem, className){
+          var self = this
+            , elem = isString(elem) ? self.query(elem) : elem;
+
+          if(isArray(elem)){
+
+            XY.each(elem, function(i){
+              if(self.hasClass(i, className)){
+                self.removeClass(i, className);
+              }else{
+                self.addClass(i, className);
+              }
+            });
+
+          }else{
+
+            if(self.hasClass(elem, className)){
+              self.removeClass(elem, className);
+            }else{
+              self.addClass(elem, className);
+            }
+
+          }
+        },
+
+        setClass: function(elem, className){
+          var self = this
+            , elem = isString(elem) ? self.query(elem) : elem;
+
+          if(isArray(elem)){
+
+            XY.each(elem, function(i){
+              i.className = className;
+            });
+
+          }else{
+
+            elem.className = className;
+
+          }
+
         },
 
         /**
@@ -241,4 +364,3 @@ XY.install('DOM', function(XY){
 
   return DOM;
 });
-
