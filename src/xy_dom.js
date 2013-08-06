@@ -12,23 +12,23 @@ XY.install('DOM', function(XY){
     , isString = XY.isString
     , isNodelist = XY.isNodelist
     , DOM = {
-
         /**
          * query 获取DOM元素
          */
         query: function(selector){
-          var __doc = arguments[1] ? arguments[1] : doc
+          var self = this
+            , __doc = arguments[1] ? arguments[1] : doc
             , __selector = isString(selector) ? selector : selector.toString();
 
           __selector = trim(selector);
 
           if(XY.indexOf('#', __selector)){
 
-            return me.getById(__selector) || null;
+            return self.getById(__selector) || null;
 
           }else if(XY.indexOf('.', __selector)){
 
-            return me.getByClass(__selector) || null;
+            return self.getByClass(__selector) || null;
 
           }else{
             return __doc.getElementsByTagName(__selector) || null;
@@ -74,11 +74,12 @@ XY.install('DOM', function(XY){
          * @return {Array}            节点数组
          */
         getByClass: function(className, nodeRefer){
+          var self = this;
           if(typeof document.getElementsByClassName === 'function'){
             nodeRefer = nodeRefer ? nodeRefer : document;
             return Array.prototype.slice.call(nodeRefer.getElementsByClassName(className));
           }else{
-            return XY.DOM.getByAttr('className', className, nodeRefer);
+            return self.getByAttr('className', className, nodeRefer);
           }
         },
 
@@ -207,9 +208,10 @@ XY.install('DOM', function(XY){
          * @param  {Function} handle 事件处理函数
          */
         winLoad: function(handle){
-          var win = window;
-          XY.DOM.addEvent(win, 'load', function(){
-            XY.DOM.removeEvent(win, 'load', arguments.callee);
+          var self = this
+            , win = window;
+          self.addEvent(win, 'load', function(){
+            self.removeEvent(win, 'load', arguments.callee);
             handle();
           });
         },
@@ -239,5 +241,4 @@ XY.install('DOM', function(XY){
 
   return DOM;
 });
-
 
