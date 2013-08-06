@@ -1,5 +1,5 @@
 /**
- * xy DOM模块
+ * xy DOM模块(依赖 xy_core.js)
  * Author: xjiancong@gmail.com
  * Date: 2013-08-06
  */
