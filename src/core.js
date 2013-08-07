@@ -17,20 +17,47 @@
    */
   window.console || (console = { log: function(){}, dir: function(){}, error: function(){} });
 
-  /**
-   * 对象深拷贝，同名子对象直接覆盖
+  /*
+   * 将源对象的成员复制到目标对象中
+   * @param { Object } 目标对象
+   * @param { Object } 源对象
+   * @param { Boolean } 是否覆盖 默认为true(覆盖)
+   * @param { Array } 只复制该数组中在源对象中的属性
+   * @return { Object } 目标对象
    */
-  XY.add = function(r, s){
-    for(var i in s){
-      r[i] = s[i];
+  XY.mix = function( target, source, override, whitelist ){
+    if( !target || !source ) return;
+    if( override === undefined ){
+      override = true;
     }
-    return r;
-  }
+
+    var prop, len, i,
+      _mix = function( prop ){
+        if( override === true || !(prop in target) ){
+          target[ prop ] = source[ prop ];
+        }
+      };      
+    
+    if( whitelist && (len = whitelist.length) ){
+      for( i = len; i; ){
+        prop = whitelist[--i];
+        if( prop in source ){
+          _mix( prop );
+        }
+      }
+    }else{
+      for( prop in source ){
+        _mix( prop );
+      }
+    }
+    
+    return target;
+  };
 
   /**
    * 基础工具方法
    */
-  XY.add(XY, {
+  XY.mix(XY, {
 
     version: '0.0.1',
 
@@ -151,7 +178,7 @@
      * 引入模块
      */
     install: function(mod, fn){
-      XY.add(XY[mod] = {}, fn.call(me, X, X[mod]));
+      XY.mix(XY[mod] = {}, fn.call(me, X, X[mod]));
     },
 
     // 函数节流
