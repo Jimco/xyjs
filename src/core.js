@@ -61,6 +61,39 @@
 
     version: '0.0.1',
 
+    browser: {}, // 存储浏览器名和版本数据
+
+    module: {}, // 模块加载器缓存对象
+
+    /**
+     * 生成一个随机 id
+     */
+    uniqueId: function(pre, length){
+      var text = pre || 'xyJS_'
+        , length = length || 6
+        , possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+      for(var i = 0; i < length; i++){
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      return text;
+    },
+
+    /*
+     * 将多个对象合并成一个新对象，后面的对象属性将覆盖前面的
+     * 常用于合并配置对象
+     * @param { Object } 一个或多个对象
+     * @return { Object } 合并后的新对象
+     */
+    merge: function(){
+      var result = {};
+      for(var i = 0, len = arguments.length; i < len; i++){
+        XY.mix(result, arguments[i]);
+      }
+
+      return result;
+    },
+
     /**
      * 遍历对象并执行回调
      * @param  {Object}   obj     待遍历对象
@@ -276,19 +309,7 @@
       return output;
     },
 
-    /**
-     * 生成一个随机 id
-     */
-    uniqueId: function(length){
-      var text = ''
-        , length = length || 6
-        , possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
-
-      for(var i = 0; i < length; i++){
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-      }
-      return text;
-    },
+    
 
     parseXML: function( data ) {
       var xml, tmp;
@@ -418,6 +439,20 @@
     }
 
   });
+
+  
+  /**
+   * 定义模块全局方法(AMD规范)
+   * @param  {String} name    模块名
+   * @param  {String/Array} deps    依赖模块列表，单个可以用字符串形式传参，多个用数组形式传参
+   * @param  {Function} factory 工厂函数，模块内容(参数对应依赖模块的外部接口)
+   */
+  window.define = function(name, deps, factory){
+    
+
+    
+  };
+
 
 })(window, window.XY || {});
 
