@@ -128,7 +128,26 @@ XY.install('DOM', function(XY){
         },
 
         css: function(elem, style, value){
+          // 未处理低版本 IE 兼容
+          if(isString(elem)) elem = this.get(elem);
+          if(typeof(__self.getComputedStyle) == 'undefined') return false;
+
+          if(value){
+
+            if(isUndefined(elem.style)){
+               elem[0].style  = value;
+            }else{
+              elem.style[style] = value;
+            }
+
+          }else{
+            return  getComputedStyle(elem)[style];
+          }
           
+        },
+
+        attr: function(elem, attr){
+          return elem.getAttribute(attr);
         },
 
         toggle: function(selector){
@@ -234,7 +253,23 @@ XY.install('DOM', function(XY){
 
         append: function(){},
 
-        prepend: function(){}
+        prepend: function(){},
+
+        remove: function(){},
+
+        html: function(elem, html){
+          elem.innerHTML = html;
+        },
+
+        val: function(elem){
+          if(isString(elem)){
+            return this.get(elem).value;
+          }else{
+            return elem.value;
+          }
+        },
+
+        text: function(){}
 
       }
 

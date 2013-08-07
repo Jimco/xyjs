@@ -137,6 +137,10 @@ XY.install('Event', function(XY){
           return elem;
         },
 
+        off: function(){
+          
+        },
+
         /**
          * 事件代理绑定
          */
