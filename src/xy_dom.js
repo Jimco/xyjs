@@ -232,39 +232,9 @@ XY.install('DOM', function(XY){
 
         },
 
-        /**
-         * window 加载完毕
-         * @param  {Function} handle 事件处理函数
-         */
-        winLoad: function(handle){
-          var self = this
-            , win = window;
-          self.addEvent(win, 'load', function(){
-            self.removeEvent(win, 'load', arguments.callee);
-            handle();
-          });
-        },
+        append: function(){},
 
-        /**
-         * DOM文档树加载完毕
-         * @param  {Function} handle 事件处理函数
-         */
-        DOMReady: function(handle){
-          var doc = document;
-          if(doc.addEventListener){
-            doc.addEventListener('DOMContentLoaded', function(){
-              doc.removeEventListener('DOMContentLoaded', arguments.callee, false);
-              handle();
-            }, false);
-          }else if(doc.attachEvent){
-            doc.attachEvent('onreadystatechange', function(){
-              if(doc.readyState === 'interactive' || doc.readyState === 'complete'){
-                doc.detachEvent('onreadystatechange', arguments.callee);
-                handle();
-              }
-            })
-          }
-        }
+        prepend: function(){}
 
       }
 
