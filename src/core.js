@@ -444,23 +444,64 @@
     },
 
     /**
-     * 自定义事件
+     * 自定义事件(观察者模式)
      */
     EventTarget: {
       on: function(name, handle){
-        __eventTarget[name] = handle;
+        // __eventTarget[name] = handle;
+        if(name.indexOf(',') > -1){
+          var names = name.split(',');
+          for(var i = 0; i < names.length; i++){
+            this.on(names[i], handle);
+          }
+        }else{
+          var ev = __eventTarget[name] || (__eventTarget[name] = []);
+          ev.push(handle);
+        }
+        return this;
       },
 
-      fire: function(name, obj){
-        if(!XY.isUndefined(__eventTarget[name])){
-          __eventTarget[name].call(me, obj);
+      fire: function(){
+        // if(!XY.isUndefined(__eventTarget[name])){
+        //   __eventTarget[name].call(me, obj);
+        // }
+        var args = Array.prototype.slice.call(arguments, 0)
+          , ev = args.shift()
+          , scope = this;
+
+        if(typeof ev !== 'string'){
+          scope = ev;
+          ev = args.shift();
         }
+
+        var handle = __eventTarget[ev];
+        if(handle instanceof Array){
+          for(var i = 0, p; p = handle[i++]; ){
+            this.eventTag = ev;
+            p.apply(scope, args);
+          }
+        }
+        return this;
       },
 
-      detach: function(name){
-        if(!XY.isUndefined(__eventTarget[name])){
-          __eventTarget[name] = null;
+      detach: function(name, handle){
+        // if(!XY.isUndefined(__eventTarget[name])){
+        //   __eventTarget[name] = null;
+        // }
+        var ev = __eventTarget[name];
+        if(ev){
+          if(!!handle){
+            for(var i = 0, p; p = ev[i++]; ){
+              if(handle === p){
+                ev.splice(i-1, 1);
+                i--;
+              }
+            }
+          }else{
+            __eventTarget[name] = null;
+          }
         }
+        return this;
       }
     }
 
