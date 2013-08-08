@@ -309,8 +309,6 @@
       return output;
     },
 
-    
-
     parseXML: function( data ) {
       var xml, tmp;
       try {
@@ -373,8 +371,8 @@
       }
     },
 
-    encodeHTML: function(text){
-      return String(text).replace(/["<>& ]/g, function(all){
+    encodeHTML: function(str){
+      return String(str).replace(/["<>& ]/g, function(all){
         return "&" + {
             '"': 'quot',
             '<': 'lt',
@@ -383,6 +381,10 @@
             ' ': 'nbsp'
         }[all] + ";";
       });
+    },
+
+    decodeHTML: function(str){
+      return String(str).replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g, "&");
     },
 
     isEmptyObject: function( obj ){
@@ -415,6 +417,10 @@
       }else{
         return '';
       }
+    },
+
+    delCookie: function(name, path, domain){
+      XY.setCookie( name, '', 'Thu, 01 Jan 1970 00:00:00 GMT', path, domain );
     },
 
     /**
