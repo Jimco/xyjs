@@ -9,9 +9,16 @@
     , EMPTY = ''
     , __eventTarget = {}
     , __tplCache = {}
+    , moduleCache = {}
+
+    , moduleOptions = {
+      baseUrl: null,
+      charset: {}
+    },
     , __isType = function(obj, type){
         return Object.prototype.toString.call(obj) === '[object '+ type +']';
       };
+
 
   /**
    * console 兼容
@@ -443,6 +450,34 @@
       return data ? fn( data ) : fn;
     },
 
+    /*
+     * 加载模块
+     * @param {String} 模块标识
+     * @param {Function} 回调函数
+     */
+    use: function(ids, fn){
+
+    },
+
+    /*
+     * 给模块添加modify方法以便在正式返回exports前进行修改
+     * @param {String} 模块名
+     * @param {Function} 修改exports的函数，该函数至少要有一个返回值
+     */
+    modify: function(name, fn){
+      modifyCache[name] = fn;
+    },
+
+    /*
+     * 修改模块加载器的配置
+     * @param {Object}
+     */
+    config: function(options){
+      if(options.baseUrl){
+        moduleOptions.baseUrl = options.baseUrl;
+      }
+    },
+
     /**
      * 自定义事件(观察者模式)
      */
@@ -507,6 +542,20 @@
 
   });
 
+
+  var xyModule = {
+
+      // 初始化模块加载器时获取 baseUrl(即当前 js 文件加载的 url)
+      init: function(){
+        var scripts = document.getElementsByTagName('script')
+          , script = scripts[scripts.length - 1]
+          , initMod = script.getAttribute('data-main')
+          , url = script.hasAttribute ? script.src : script.getAttribute('src', 4);
+
+
+      }
+    }
+
   
   /**
    * 定义模块全局方法(AMD规范)
@@ -519,8 +568,29 @@
       , mod = module[name]
       , modUrl = mod.url;
 
+    mod.deps = []
+    mod.status = 2; // 开始解析模块内容
 
-        
+    if(typeof deps === 'function'){
+      factory = deps;
+      deps = null;
+    }
+
+    // 如果有依赖，先加载依赖模块
+    if(deps){
+      deps = typeof deps === 'string' ? [deps] : deps;
+      
+    }
+
+    if(!deps || !deps.length){
+
+    }
+
+    if(!mod.deps.length){
+      delete mod.deps;
+    }
+
+
   };
 
 
