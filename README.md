@@ -1,12 +1,12 @@
 xyJS
 ===========
 
-js 框架，主要解决前端浏览器兼容问题
+js 框架，重复造的轮子工程，主要解决前端浏览器兼容问题
 
 Documentation
 -------------
 
-core.js - xyjs核心
+core.js - xyjs 核心
 
 selector.js - 选择器
 
