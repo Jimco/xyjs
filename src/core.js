@@ -37,7 +37,7 @@
         if( override === true || !(prop in target) ){
           target[ prop ] = source[ prop ];
         }
-      };      
+      };
     
     if( whitelist && (len = whitelist.length) ){
       for( i = len; i; ){
@@ -212,7 +212,7 @@
      * 引入模块
      */
     install: function(mod, fn){
-      XY.mix(XY[mod] = {}, fn.call(me, X, X[mod]));
+      XY.mix(XY[mod] = {}, fn.call(me, XY, XY[mod]));
     },
 
     // 函数节流
@@ -515,9 +515,12 @@
    * @param  {Function} factory 工厂函数，模块内容(参数对应依赖模块的外部接口)
    */
   window.define = function(name, deps, factory){
-    
+    var module = XY.module
+      , mod = module[name]
+      , modUrl = mod.url;
 
-    
+
+        
   };
 
 
