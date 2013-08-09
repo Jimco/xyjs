@@ -1,0 +1,26 @@
+{
+  "name": "xyjs",
+  "title": "xyjs",
+  "description": "xyjs",
+  "version": "0.0.1",
+  "homepage": "https://github.com/xiejc/xyjs",
+  "author": {
+    "name": "Jiancong Xie",
+    "email": "xjiancong@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/xiejc/xyjs.git"
+  },
+  "bugs": "https://github.com/xiejc/xyjs/issues",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/xiejc/xyjs/blob/master/LICENSE-MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": "*"
+  },
+  "keywords": []
+}
