@@ -1,0 +1,6 @@
+###############
+# xyJS ignore #
+###############
+
+node_modules
+# *.gitignore
