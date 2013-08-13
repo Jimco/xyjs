@@ -20,8 +20,8 @@ module.exports = function(grunt) {
         separator: ';'
       },
       dist: {
-        src: ['src/<%= pkg.name %>.js', 'src/app.js'],
-        dest: 'dist/<%= pkg.name %>.js'
+        src: ['src/core.js', 'src/selector.js', 'src/dom.js', 'src/event.js', 'src/ajax.js', 'src/animate.js'],
+        dest: 'dist/<%= pkg.name %>.debug.js'
       },
     },
     uglify: {
