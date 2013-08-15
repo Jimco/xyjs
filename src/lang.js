@@ -2,12 +2,9 @@
  * 自定义扩展模块
  * Author: xiejiancong.com
  * Date: 2012-09-24
- * require:
- *  core.js 
- *  lang-patch.js
+ * rely: core.js lang-patch.js
  */
- 
-(function(window, XY, undefined){
+;(function(window, XY, undefined){
   
   var rValidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g
     , rValidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g
