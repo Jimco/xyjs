@@ -29,8 +29,76 @@
   });
 
   var xySelector = {
+      /**
+       * 对一组DOM元素按照在DOM树中的顺序进行排序
+       * 同时删除同级或重复的DOM元素
+       * @param  {Array}  nodelist  DOM数组
+       * @param  {Boolean} isParent 是否检测重复的父元素，如果该参数为true，将删除同级元素，只保留第一个
+       * @return {Array}            
+       */
       unique: function(nodelist, isParent){
+        if(nodelist.length < 2) return nodelist;
 
+        var i = 0
+          , k = 1
+          , len = nodelist.length;
+
+        hasDuplicate = baseHasDuplicate;
+        hasParent = isParent;
+
+        // IE的DOM元素都支持sourceIndex
+        if(nodelist[0].sourceIndex){
+          var arr = []
+            , obj = {}
+            , elems = []
+            , j = 0, index, elem;
+
+          for( ; i < len; i++){
+            elem = nodelist[i];
+            index = (hasParent ? elem.parentNode.sourceIndex : elem.sourceIndex) + 1e8;
+
+            if(!obj[index]){
+              ( arr[j++] = new String(index) ).elem = elem;
+              obj[index] = true;
+            }
+          }
+
+          arr.sort();
+
+          while(j){
+            elems[--j] = arr[j].elem;
+          }
+
+          arr = null;
+          return elems;
+        }
+        // 标准浏览器的DOM元素都支持compareDocumentPosition
+        else{
+          nodelist.sort(function(a, b){
+            if(hasParent){
+              a = a.parentNode;
+              b = b.parentNode;
+            }
+
+            if(a === b){
+              hasDuplicate = true;
+              return 0;
+            }
+
+            return a.compareDocumentPosition(b) & 4 ? -1 : 1;
+          });
+
+          if(hasDuplicate){
+            for( ; k < nodelist.length; k++){
+              elem = nodelist[k];
+              if(hasParent ? elem.parentNode === nodelist[k - 1].parentNode : elem === nodelist[k - 1]){
+                nodelist.splice(k--, 1);
+              }
+            }
+          }
+
+          return nodelist;
+        }
       },
 
       getAttribute: function(elem, name){
