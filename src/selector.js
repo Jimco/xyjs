@@ -102,16 +102,30 @@
       },
 
       getAttribute: function(elem, name){
-
+        return attrMap[name] ? elem[ attrMap[name] ] || null : 
+          rAttrUrl.test(name) ? elem.getAttribute(name, 2) :
+          elem.getAttribute(name);
       },
 
       // 查找nextSibling元素
       next: function(prev){
-
+        prev = prev.nextSibling;
+        while(prev){
+          if(prev.nodeType === 1){
+            return prev;
+          }
+          prev = prev.nextSibling;
+        }
       },
 
       prev: function(next){
-
+        next = next.previousSibling;
+        while(next){
+          if(next.nodeType === 1){
+            return next;
+          }
+          next = next.previousSibling;
+        }
       },
 
       /**
