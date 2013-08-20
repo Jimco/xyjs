@@ -314,16 +314,84 @@
         },
 
         animated : function( elem ){
-          return easyData.data( elem, 'anim', 'animQueue' ) !== undefined;
+          return xyData.data( elem, 'anim', 'animQueue' ) !== undefined;
         }
 
       },
 
       // 关系选择器的过滤器
       relatives: {
+        // 子节点
+        '>': function(filter, name, tagName, context){
+          var isType = XY.isString(filter)
+            , elems = []
+            , i = 0
+            , l = 0
+            , len = context.length
+            , child, clen, children, j;
 
+          for( ; i < len; i++){
+            children = context[i].childNodes
+            clen = children.length;
+
+            for(j = 0; j < clen; j++){
+              child = children[j];
+              if( child.nodeType === 1 && (isType || filter(child, name, tagName)) ){
+                elems[l++] = child;
+              }
+            }
+          }
+
+          child = children = context = null;
+          return isType ? xySelector.finder[filter](name, elems, true) : elems;
+        },
+
+        // 相邻节点
+        '+': function(filter, name, tagName, context){
+          var isType = XY.isString(filter)
+            , elems = []
+            , len = context.length
+            , i = 0
+            , l = 0
+            , nextElem;
+
+          for( ; i < len; i++){
+            nextElem = xySelector.next(context[i]);
+            if( nextElem && (isType || filter(nextElem, name, tagName)) ){
+              elems[l++] = nextElem;
+            }
+          }
+
+          nextElem = context = null;
+          return isType ? xySelector.finder[filter](name, elems, true) : elems;
+        },
+
+        // 同级节点
+        '~': function(filter, name, tagName, context){
+          var isType = XY.isString(filter)
+            , elems = []
+            , i = 0
+            , l = 0
+            , len, nextElem;
+
+          context = xySelector.unique(context, true);
+          len = context.length;
+
+          for( ; i < len; i++){
+            nextElem = context[i].nextSibling;
+            while(nextElem){
+              if( nextElem.nodeType === 1 && (isType || filter(nextElem, name, tagName)) ){
+                elems[l++] = nextElem; 
+              }
+              nextElem = nextElem.nextSibling;
+            }
+          }
+
+          nextElem = context = null;
+          return isType ? xySelector.finder[filter](name, elems, true) : elems;
+        }
       }
-    }
+    };
 
 
   XY.mix(XY, {
