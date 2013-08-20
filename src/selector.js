@@ -138,35 +138,120 @@
        * 有查找范围将返回该选择器的查找结果
        */
       adapter: function(selector, context, nextSelector) {
-        
+        var index, name, tagName, matches, type;
+
+        type = nextSelector !== undefined ? 'RELATIVE' :
+          ~selector.indexOf(':') ? 'PSEUDO' :
+          ~selector.indexOf('#') ? 'ID' :
+          ~selector.indexOf('[') ? 'ATTR' :
+          ~selector.indexOf('.') ? 'CLASS' : 'TAG';
+
+        if(!context){
+          switch(type){
+            case 'CLASS':
+              index = selector.indexOf('.');
+              name = ' ' + selector.substring(index + 1) + ' ';
+              tagName = selector.substring(0, index);
+            break;
+
+            case 'TAG':
+              name = selector.toUpperCase()
+            break;
+
+            case 'ID':
+              index = selector.indexOf('#');
+              name = selector.substring(index + 1);
+              tagName = selector.substring(0, index).toUpperCase();
+            break;
+          }
+
+          return [type, name, tagName];
+        }
+
+        return xySelector.finder[type](selector, context, nextSelector);
       },
 
       indexFilter: function(name, i){
-
+        return name === 'even' ? i % 2 === 0 : 
+          name === 'odd' ? i % 2 === 1 : 
+          ~name.indexOf('n') ? (name === 'n' || i % parseInt(name) === 0) :
+          parseInt(name) === i;
       }
     };
 
     xySelector.finder = {
+      // id选择器
       ID: function(selector){
-        return document.getElementById( selector.subString(selector.indexOf('#') + 1) );
+        return document.getElementById( selector.substring(selector.indexOf('#') + 1) );
       },
 
+      // class选择器
       CLASS: function(selector, context) {
-        
+        var elems = []
+          , index = selector.indexOf('.')
+          , tagName = selector.substring(0, index) || '*'
+          , className = ' ' + selector.substring(index + 1) + ' '
+          , i = 0, l = 0, elem, len, name;
+
+        context = xySelector.finder.TAG(tagName, context, true);
+        len = context.length;
+
+        for( ; i < len; i++){
+          elem = context[i];
+          name = elem.className;
+          if( name && ~(' ' + name + ' ').indexOf(className) ){
+            elems[l++] = elem;
+          }
+        }
+
+        elem = context = null;
+        return elems;
       },
 
+      // tag 选择器
       TAG: function(selector, context, noCheck){
+        var elems = []
+          , prevElem = context[0]
+          , contains = XY.contains
+          , makeArray = XY.makeArray
+          , len = context.length
+          , i = 0, elem;
 
+        noCheck = noCheck || len === 1;
+
+        for( ; i < len; i++){
+          elem = context[i];
+          if(!noCheck){
+            if(!contains(prevElem, elem)){
+              prevElem = elem;
+              elems = makeArray(elem.getElementsByTagName(selector), elems);
+            }
+          }
+          else{
+            elems = makeArray(elem.getElementsByTagName(selector), elems);
+          }
+        }
+
+        prevElem = elem = context = null;
+        return elems;
       },
 
+      // 属性选择器
       ATTR: function(selector, context, isFiltered){
 
       },
 
+      // 关系选择器
       RELATIVE: function(selector, context, nextSelector){
+        var matches = xySelector.adapter(nextSelector)
+          , type = matches[0]
+          , filter = xySelector.filter[type] || type
+          , name = matches[1] || nextSelector;
 
+        return xySelector.filter.relatives[selector](filter, name, matches[2], context);
       },
 
+      // 伪类选择器
       PSEUDO: function(selector, context, isFiltered){
 
       }
@@ -192,6 +277,45 @@
 
       // 伪类选择器的过滤器
       pseudos: {
+        empty: function(elem){
+          return !elem.firstChild;
+        },
+
+        not: function(elem, name, tagName, filter){
+          return !filter(elem, name, tagName);
+        },
+
+        form : function( elem, attr, val ){
+          return elem.tagName === 'INPUT' && elem.type !== 'hidden' && elem[attr] === val; 
+        },  
+        
+        enabled : function( elem ){
+          return this.form( elem, 'disabled', false );
+        },
+        
+        disabled : function( elem ){
+          return this.form( elem, 'disabled', true );
+        },
+        
+        checked : function( elem ){
+          return this.form( elem, 'checked', true );
+        },
+        
+        selected : function( elem ){
+          return elem.tagName === 'OPTION' && elem.selected === true;
+        },
+
+        hidden : function( elem ){      
+          return ( !elem.offsetWidth && !elem.offsetHeight ) || ( elem.currentStyle && elem.currentStyle.display === "none" );
+        },
+        
+        visible : function( elem ){
+          return !this.hidden( elem );
+        },
+
+        animated : function( elem ){
+          return easyData.data( elem, 'anim', 'animQueue' ) !== undefined;
+        }
 
       },
 
@@ -203,6 +327,24 @@
 
 
   XY.mix(XY, {
+
+    unique: function(nodelist){
+      return xySelector.unique(nodelist);
+    },
+
+    // 检测a元素是否包含了b元素
+    contains: function(a, b){
+      if(a.compareDocumentPosition){
+        return !!(a.compareDocumentPosition(b) & 16);
+      }
+      // IE支持contains
+      else{
+        return a !== b && a.contains(b);
+      }
+
+      return false;
+    },
+
     // DOM 元素过滤器
     filter: function(source, selector){
 
