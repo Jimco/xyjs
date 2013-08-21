@@ -3,7 +3,7 @@
  * Author: xjiancong@gmail.com
  * Date: 2013-08-18
  */
-(function(window, XY, undefined){
+(function(window, document, XY, undefined){
 
   var hasDuplicate = false       // 是否有重复的DOM元素
     , hasParent = false          // 是否有重复得父元素
@@ -479,6 +479,7 @@
             }
           }
           prevElem = elem = context = null;
+          // debugger;
           return elems;
         }
         catch(e){};
@@ -514,4 +515,4 @@
     }
   });
 
-})(window, window.XY || {});
+})(window, document, window.XY || {});
