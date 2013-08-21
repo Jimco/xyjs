@@ -13,7 +13,7 @@
     , rValidchars = /^[\],:{}\s]*$/  
     
     , toString = Object.prototype.toString
-    , __tplCache = {};
+    , tplCache = {};
 
   /**
    * console 兼容
