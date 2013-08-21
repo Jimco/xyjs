@@ -415,11 +415,102 @@
 
     // DOM 元素过滤器
     filter: function(source, selector){
-
+      var target = []
+        , l = 0
+        , matches, filter, type, name, elem, tagName, len, i;
+        
+      source = XY.makeArray( source );
+      len = source.length;
+        
+      if( XY.isString(selector) ){
+        matches = xySelector.adapter( selector );
+        filter = xySelector.filter[ matches[0] ];
+        name = matches[1];
+        tagName = matches[2];
+        
+        if(!filter) type = matches[0];
+        
+        if(type){
+          target = easySelector.finder[ type ](selector, source, true);
+        }
+        else{
+          for( i = 0; i < len; i++ ){
+            elem = source[i];
+            if( filter(elem, name, tagName) ){
+              target[ l++ ] = elem; 
+            }         
+          }
+        }
+      }   
+      else if( E.isFunction(selector) ){
+        for( i = 0; i < len; i++ ){
+          elem = source[i];
+          if( selector.call(elem, i) ){
+            target[ l++ ] = elem;
+          }
+        }     
+      }
+      
+      source = elem = null;
+      return target;
     },
 
     query: function(selector, context){
+      context = context || document;
+      if(!XY.isString(selector)) return context;
 
+      var elems = []
+        , contains = XY.contains
+        , makeArray = XY.makeArray
+        , nodelist, selector, result, prevElem
+        , lastElem, nextMatch, matches, elem, len, i;
+
+      // 标准浏览器和IE8+支持querySelectorAll
+      if(document.querySelectorAll){
+        try{
+          context = makeArray(context);
+          len = context.length;
+          prevElem = context[0];
+          for( i = 0 ; i < len; i++){
+            elem = context[i];
+            if(!contains(prevElem, elem)){
+              prevElem = elem;
+              elems = makeArray( elem.querySelectorAll(selector), elems );
+            }
+          }
+          prevElem = elem = context = null;
+          return elems;
+        }
+        catch(e){};
+      }
+
+      matches = selector.split(',');
+      len = matches.length;
+
+      for(i = 0; i < len; i++){
+        nodelist = [context];
+        // 将选择器进行分割 #list .item a => ['#list', '.item', 'a']
+        selectors = matches[i].replace(rRelative, function(symbol){
+          return ' ' + symbol + ' ';
+        }).match(/[^\s]+/g);
+
+        for(var j = 0, clen = selectors.length; j < clen; j++){
+          result = selector[j];
+          lastElem = makeArray( nodelist[nodelist.length - 1] );
+
+          // 关系选择器特殊处理
+          nextMatch = /[>\+~]/.test(result.charAt(0)) ? selectors[++j] : undefined;
+          elem = xySelector.adapter(result, lastElem, nextMatch);
+
+          if(!elem) return elems;
+          nodelist[nodelist.length++] = elem;
+        }
+
+        elems = makeArray(nodelist[nodelist.length - 1], elems);
+      }
+
+      nodelist = result = lastElem = context = elem = null;
+      return len > 1 ? XY.unique(elems) : elems;
     }
   });
 
