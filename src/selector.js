@@ -238,7 +238,50 @@
 
       // 属性选择器
       ATTR: function(selector, context, isFiltered){
+        var elems = []
+          , matches = selector.match(rAttr)
+          , getAttribute = xySelector.getAttribute
+          , attr = matches[1]
+          , symbol = matches[2] || undefined
+          , attrVal = matches[5] || matches[4]
+          , i = 0
+          , j = 0
+          , len, elem, val, matchAttr, sMatches, filterBase, name, tagName;
 
+        selector = selector.substring(0, selector.indexOf('[')) || '*'; 
+        context = isFiltered ? context : xySelector.adapter(selector, context);
+
+        len = context.length;
+        sMatches = xySelector.adapter(selector);
+        filterBase = xySelector.filter[ sMatches[0] ];
+        name = sMatches[1];
+        tagName = sMatches[2];
+
+        for( ; i < len; i++){
+          elem = context[i];
+          if(!isFiltered || filterBase(elem, name, tagName)){
+            val = getAttribute(elem, attr);
+            // 使用字符串的方法比正则匹配要快
+            matchAttr = val === null ? 
+              symbol === '!=' && val !== attrVal :
+              symbol === undefined ? val !== null :
+              symbol === '=' ? val === attrVal : 
+              symbol === '!=' ? val !== attrVal :
+              symbol === '*=' ? ~val.indexOf(attrVal) :
+              symbol === '~=' ? ~(' ' + val + ' ').indexOf(' ' + attrVal + ' ') :
+              symbol === '^=' ? val.indexOf(attrVal) === 0 :
+              symbol === '$=' ? val.substring(val.length - attrVal.length) === attrVal :
+              symbol === '|=' ? val === attrVal || val.indexOf(attrVal + '-') === 0 :
+              false;
+
+            if(matchAttr){
+              elems[j++] = elem;
+            }
+          }
+        }
+
+        elem = context = null;
+        return elems;
       },
 
       // 关系选择器
