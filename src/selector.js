@@ -299,14 +299,79 @@
 
       // 伪类选择器
       PSEUDO: function(selector, context, isFiltered){
+        var elems = []
+          , pMatches = selector.match(rPseudo)
+          , pseudoType = pMatches[1]
+          , filterName = pMatches[3]
+          , next = xySelector.next
+          , prev = xySelector.prev
+          , filter = xySelector.filter
+          , sMatches, filterBase, name, selectorType, len, i
+          , parent, child, elem, nextElem, siblingElem;
 
+        selector = selector.substring( 0, selector.indexOf(':') ) || '*';
+        context = isFiltered ? context : xySelector.adapter(selector, context);
+        len = context.length;
+        sMatches = xySelector.adapter(selector);
+        selectorType = sMatches[0];
+        filterBase = filter[selectorType];
+        name = sMatches[1];
+
+        // 处理带'-'的索引(位置)伪类选择器
+        if(~pseudoType.indexOf('-')){
+          var pseudoNames = pseudoType.split('-')
+            , type = pseudoNames[0]
+            , extras = filterName ? filterName.match(/n\s?(\+|\-)\s?(\d+)/) : false
+            , extra = extras ? parseInt(extras[2]) : undefined
+            , isChild = pseudoNames[pseudoNames.length - 1] === 'child'
+            , isLast = pseudoNames[1] === 'last'
+            , first = isLast ? 'lastChild' : 'firstChild'
+            , sibling = isLast ? 'previousSibling' : 'nextSibling'
+            , add = isLast ? 'unshift' : 'push'
+            , filterFn, flag, index;
+
+          if(selectorType !== 'TAG' && !isChild) return elems;
+
+          switch(type){
+            case 'nth': 
+              parent = [];
+
+              for(i = 0; i < len; i++){
+                parent[parent.length++] = context[i].parentNode;
+              }
+              parent = xySelector.unique(parent);
+
+              filterFn = xySelector.indexFilter;
+
+              for( i = 0; child = parent[i++]; ){
+                
+              }
+
+
+            break;
+
+            case 'only':
+
+            break;
+
+            default:
+
+          }
+
+        }
+        // 处理非索引伪类选择器
+        else{
+
+        }
+
+        parent = child = elem = nextElem = siblingElem = context = null;
+        return elems;
       }
     }
 
     xySelector.filter = {
       ID: function(elem, name, tagName){
         var isTag = tagName === '' || elem.tagName === tagName;
-
         return isTag && elem.id === name;
       },
 
