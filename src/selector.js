@@ -496,7 +496,7 @@
         }).match(/[^\s]+/g);
 
         for(var j = 0, clen = selectors.length; j < clen; j++){
-          result = selector[j];
+          result = selectors[j];
           lastElem = makeArray( nodelist[nodelist.length - 1] );
 
           // 关系选择器特殊处理
