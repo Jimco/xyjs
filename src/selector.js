@@ -102,6 +102,9 @@
       },
 
       getAttribute: function(elem, name){
+        // IE6/7中getAttribute获取href/src等属性值与其他浏览器不同，
+        // 标准浏览器返回相对路径，IE6/7返回完整路径，
+        // IE6/7要与其他浏览器保持一致，可将getAttribute第二个参数设为2
         return attrMap[name] ? elem[ attrMap[name] ] || null : 
           rAttrUrl.test(name) ? elem.getAttribute(name, 2) :
           elem.getAttribute(name);
