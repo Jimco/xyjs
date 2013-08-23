@@ -9,7 +9,7 @@
     , EMPTY = ''
     , rQuickExpr = /^(?:[^#<]*(<[\w\W]+>)[^>]*$|#([\w\-]*)$)/
     , rReadyState = /loaded|complete|undefined/
-    , __eventTarget = {}
+    , eventSplitter = /\s+/
     , moduleCache = {}  // 模块加载时的队列数据存储对象
     , modifyCache = {}  // modify的临时数据存储对象
 
@@ -169,60 +169,129 @@
      * 自定义事件(观察者模式)
      */
     EventTarget: {
-      on: function(name, handle){
-        // __eventTarget[name] = handle;
-        if(name.indexOf(',') > -1){
-          var names = name.split(',');
-          for(var i = 0; i < names.length; i++){
-            this.on(names[i], handle);
+      on: function(evts, callback, context){
+        // if(name.indexOf(',') > -1){
+        //   var names = name.split(',');
+        //   for(var i = 0; i < names.length; i++){
+        //     this.on(names[i], handle);
+        //   }
+        // }else{
+        //   var ev = __eventTarget[name] || (__eventTarget[name] = []);
+        //   ev.push(handle);
+        // }
+        // return this;
+        var evt, calls, node, tail, list;
+        
+        if(!callback) return this;
+        
+        evts = evts.split(eventSplitter);
+        calls = this._callbacks || (this._callbacks = {});
+
+        while( evt = evts.shift() ){
+          list = calls[evt];
+          node = list ? list.tail : {};
+          node.next = tail = {};
+          node.context = context;
+          node.callback = callback;
+          calls[evt] = {
+            tail: tail,
+            next: list ? list.next : node;
           }
-        }else{
-          var ev = __eventTarget[name] || (__eventTarget[name] = []);
-          ev.push(handle);
         }
+        
         return this;
       },
 
-      fire: function(){
-        // if(!XY.isUndefined(__eventTarget[name])){
-        //   __eventTarget[name].call(me, obj);
+      fire: function(evts){
+        // var args = Array.prototype.slice.call(arguments, 0)
+        //   , ev = args.shift()
+        //   , scope = this;
+
+        // if(typeof ev !== 'string'){
+        //   scope = ev;
+        //   ev = args.shift();
         // }
-        var args = Array.prototype.slice.call(arguments, 0)
-          , ev = args.shift()
-          , scope = this;
 
-        if(typeof ev !== 'string'){
-          scope = ev;
-          ev = args.shift();
-        }
-
-        var handle = __eventTarget[ev];
-        if(handle instanceof Array){
-          for(var i = 0, p; p = handle[i++]; ){
-            this.eventTag = ev;
-            p.apply(scope, args);
-          }
-        }
-        return this;
-      },
-
-      detach: function(name, handle){
-        // if(!XY.isUndefined(__eventTarget[name])){
-        //   __eventTarget[name] = null;
+        // var handle = __eventTarget[ev];
+        // if(handle instanceof Array){
+        //   for(var i = 0, p; p = handle[i++]; ){
+        //     this.eventTag = ev;
+        //     p.apply(scope, args);
+        //   }
         // }
-        var ev = __eventTarget[name];
-        if(ev){
-          if(!!handle){
-            for(var i = 0, p; p = ev[i++]; ){
-              if(handle === p){
-                ev.splice(i-1, 1);
-                i--;
-              }
+        // return this;
+        var evt, node, calls, tail, args, all, rest;
+
+        if( !(calls = this._callbacks) ) return this;
+
+        all = calls.all;
+        evts = evts.split(eventSplitter);
+        rest = Array.prototype.slice.call(arguments, 1);
+
+        while( evt = evts.shift() ){
+          if( node = calls(evt) ){
+            tail = node.tail;
+            while( (node = node.next) !== tail ){
+              node.callback.apply(node.context || this, rest);
             }
-          }else{
-            __eventTarget[name] = null;
+          }
+
+          if(node = all){
+            tail = node.tail;
+            args = [evt].concat(rest);
+
+            while( (node = node.next) !== tail ){
+              node.callback.apply(node.context || this, args);
+            }
           }
         }
+
+        return this;
+      },
+
+      off: function(evts, callback, context){
+        // var ev = __eventTarget[name];
+        // if(ev){
+        //   if(!!handle){
+        //     for(var i = 0, p; p = ev[i++]; ){
+        //       if(handle === p){
+        //         ev.splice(i-1, 1);
+        //         i--;
+        //       }
+        //     }
+        //   }else{
+        //     __eventTarget[name] = null;
+        //   }
+        // }
+        // return this;
+        var evt, calls, node, tail, cb, ctx;
+
+        if( !(calls = this._callbacks) ) return;
+        if( !(evts || callback || context) ){
+          delete this._callbacks;
+          return this;
+        }
+
+        // evts = evts ? evts.split(eventSplitter) : _.keys(calls);
+        evts = evts.split(eventSplitter);
+
+        while( evt = evts.shift() ){
+          node = calls[evt];
+          delete calls[evt];
+
+          if( !node || (callback || context) ) continue;
+
+          tail = node.tail;
+          while( (node = node.next) !== tail ){
+            cb = node.callback;
+            ctc = node.context;
+
+            if( (callback && cb !== callback) || (context && ctx !== context) ){
+              this.on(evt, cb, ctx);
+            }
+          }
+        }
+
         return this;
       }
     }

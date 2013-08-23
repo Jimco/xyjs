@@ -31,5 +31,17 @@
     </div>
   </div>
 
+  <script>
+    XY.EventTarget.on('demoEvt1,demoEvt2,demoEvt3', function(param){
+      console.log('Hello '+ param +' !');
+    })
+    .on('demoEvt1', function(param){
+      console.log('I\'m this second callback~');
+    });
+
+
+
+  </script>
+
 </body>
 </html>
