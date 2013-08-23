@@ -344,24 +344,88 @@
               filterFn = xySelector.indexFilter;
 
               for( i = 0; child = parent[i++]; ){
-                
-              }
+                elem = child[first];
+                index = 0;
 
+                while(elem){
+                  if( elem.nodeType === 1 && (isChild || filterBase(elem, name)) ){
+                    flag = filterFn(filterName, ++index);
+                    if(!isChild || filterBase(elem, name)){
+                      if(extras){
+                        if( (extras[1] === '+' ? index - extra : index + extra) % parseInt(filterName) === 0 ){
+                          elems[add](elem);
+                        } 
+                      }
+                      else if(flag){
+                        elems[add](elem);
+                      }
+                    }
+                  }
+
+                  elem = elem[sibling];
+                }
+              }
 
             break;
 
             case 'only':
+              context = xySelector.unique(context, true);
+              len = context.length;
+
+              for(i = 0; i < len; i++){
+                elem = context[i];
+
+                if(isChild){
+                  if( !next(elem) && !prev(elem) ){
+                    elems[elems.length++] = elem;
+                  }
+                }
+                else{
+                  index = 0;
+                  nextElem = elem.nextSibling;
+
+                  while(nextElem){
+                    if( nextElem.nodeType === 1 && filterBase(nextElem, name) ){
+                      index += 1;
+                      break; 
+                    }
+                    nextElem = nextElem.nextSibling;
+                  }
+
+                  if(!index){
+                    elems[elems.length++] = elem;
+                  }
+                }
+              }
 
             break;
 
             default:
+              filterFn = type === 'last' ? next : prev;
 
+              for(i = 0; i < len; i++){
+                elem = context[i];
+                siblingElem = filterFn(elem);
+
+                flag = isChild ? !siblingElem : (!siblingElem || siblingElem.tagName !== name);
+
+                if( flag && filterBase(elem, name) ){
+                  elems[elems.length++] = elem;
+                }
+              }
           }
 
         }
         // 处理非索引伪类选择器
         else{
-
+          if(filterName) sMatches = xySelector.adapter(filterName);
+          
+          for(i = 0; i < len; i++){
+            elem = context[i];
+            if( filter.pseudos[pseudoType](elem, sMatches[1], sMatches[2], filter[sMatches[0]]) ){
+              elems[elems.length++] = elem;
+            }
+          }
         }
 
         parent = child = elem = nextElem = siblingElem = context = null;
