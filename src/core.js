@@ -166,7 +166,22 @@
     },
 
     /**
-     * 自定义事件(观察者模式)
+     * 自定义事件管理器(观察者模式)
+     * 数据格式如：
+     * {
+     *   tail: {Object},
+     *   next: {
+     *     callback: {Function},
+     *     context: {Object},
+     *     next: {
+     *       callback: {Function},
+     *       context: {Object},
+     *       next: {Object}
+     *     }
+     *   }
+     * }
+     * events允许指定多个事件名称, 通过空白字符进行分隔(如空格, 制表符等)
+     * 当事件名称为"all"时, 在调用trigger方法触发任何事件时, 均会调用"all"事件中绑定的所有回调函数
      */
     EventTarget: {
       on: function(evts, callback, context){
@@ -272,8 +287,8 @@
           return this;
         }
 
-        // evts = evts ? evts.split(eventSplitter) : _.keys(calls);
-        evts = evts.split(eventSplitter);
+        // 如果没有指定events, 则解析已绑定所有事件的名称列表
+        evts = evts ? evts.split(eventSplitter) : Object.keys(calls);
 
         while( evt = evts.shift() ){
           node = calls[evt];
