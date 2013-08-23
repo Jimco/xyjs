@@ -195,8 +195,8 @@
           node.callback = callback;
           calls[evt] = {
             tail: tail,
-            next: list ? list.next : node;
-          }
+            next: list ? list.next : node
+          };
         }
         
         return this;
@@ -229,7 +229,7 @@
         rest = Array.prototype.slice.call(arguments, 1);
 
         while( evt = evts.shift() ){
-          if( node = calls(evt) ){
+          if( node = calls[evt] ){
             tail = node.tail;
             while( (node = node.next) !== tail ){
               node.callback.apply(node.context || this, rest);
