@@ -20,7 +20,7 @@ module.exports = function(grunt) {
         separator: ';'
       },
       dist: {
-        src: ['src/core.js', 'src/lang.js', 'src/lang-patch.js', 'src/selector.js', 'src/dom.js', 'src/event.js', 'src/ajax.js', 'src/animate.js'],
+        src: ['src/lang-patch.js', 'src/core.js', 'src/lang.js', 'src/selector.js', 'src/dom.js', 'src/event.js', 'src/ajax.js', 'src/animate.js'],
         dest: 'dist/<%= pkg.name %>.debug.js'
       },
     },
