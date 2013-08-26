@@ -210,34 +210,70 @@
     }
   };
 
-  // 函数节流
-  XY.throttle = function(opt){
-    var timer = null
-      , t_start
-      , fn = opt.fn
-      , context = opt.context
-      , delay = opt.delay || 100
-      , mustRunDelay = opt.mustRunDelay || 50;
+  /**
+   * 函数节流方法
+   * @param  {Function} func 执行函数
+   * @param  {Number} wait   时间间隔
+   * @return {Function}      返回一个函数，该函数会自动调用func，并进行节流控制
+   * eg:
+   * var lazyUpdate = XY.throttle(updatePosition, 100);
+   * $(window).scroll(lazyUpdate);
+   */
+  XY.throttle = function(func, wait){
+    var context, args, timeout, throttling, more,result
+      , whenDone = XY.debounce(function(){
+        more = throttling = false;  
+      }, wait);
 
     return function(){
-      var args = arguments
-        , t_curr = +new Date();
-      context = context || this;
-      
-      clearTimeout(timer);
-      if(!t_start){
-        t_start = t_curr;
+      context = this;
+      args = arguments;
+      var later = function(){
+          timeout = null;
+          if(more) func.apply(context, args);
+          whenDone();
+        };
+
+      if(!timeout) timeout = setTimeout(later, wait);
+
+      if(throttling){
+        more = true;
       }
-      if(mustRunDelay && t_curr - t_start >= mustRunDelay){
-        fn.apply(context, args);
-        t_start = t_curr;
+      else{
+        result = func.apply(context, args);
       }
-      else {
-        timer = setTimeout(function(){
-          fn.apply(context, args);
-        }, delay);
-      }
-    };
+
+      whenDone();
+      throttling = true;
+      return result;
+    }
+  };
+
+  /**
+   * 函数节流方法
+   * @param  {Function} func     执行函数
+   * @param  {Number} wait       允许的时间间隔
+   * @param  {Boolean} immediate 是否立即执行，true为立即调用，false为在时间截止时调用
+   * @return {Function}          返回一个函数，该函数会自动调用func，并进行节流控制
+   * eg:
+   * var lazyLayout = XY.debounce(calculateLayout, 300);
+   * $(window).resize(lazyLayout);
+   */
+  XY.debounce = function(func, wait, immediate){
+    var timeout;
+    return function(){
+      var context = this
+        , args = arguments
+        , later = function(){
+          timeout = null;
+          if(!immediate) func.apply(context, args);
+        };
+
+      if(immediate && !timeout) func.apply(context, args);
+
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    }
   };
 
   /**
