@@ -495,6 +495,26 @@
         return [];
       },
 
+      isLoaded: function(mod){
+
+      },
+
+      factoryHandle: function(name, mod, factory, data){
+
+      },
+
+      fireFactory: function(useKey){
+
+      },
+
+      complete: function(mod){
+
+      },
+
+      create: function(url, name, useKey){
+
+      },
+
       /*
        * 加载模块
        * @param {String} 用来访问存储在moduleCache中的数据的属性名
@@ -579,115 +599,64 @@
    * @param  {Function} factory 工厂函数，模块内容(参数对应依赖模块的外部接口)
    */
   window.define = function(name, deps, factory){
-    var module = XY.module
-      , mod = module[name]
-      , toDepData = module.toDepData
-      , getExports = xyModule.getExports
-      , modUrl = mod.url
-      , data, urls, names, baseUrl, i, j, depMods, depName, result, exports, toDepMod, args;
 
-    // 存储模块依赖列表的数组
-    mod.deps = [];
-    mod.status = 2; // 开始解析模块内容
-
-    if(typeof deps === 'function'){
+    if(typeof name !== 'string'){
+      if(typeof name === 'function'){
+        factory = name;
+      }
+      else{
+        factory = deps;
+        deps = name;
+      }
+      name = xyModule.getCurrentScript()
+    }
+    else if(deps !== undefined && factory === undefined){
       factory = deps;
       deps = null;
+    };
+
+    var module = XY.module
+      , mod = module[name]
+      , isRepeat = false
+      , isLoaded = true
+      , names = []
+      , urls = []
+      , insertIndex = 0
+      , pullIndex = 0
+      , useKey, data, modUrl, factorys, baseUrl, depMod, depName, result, exports, args, depsData, repeatDepsData, i, repeatName;
+
+    // 在模块都合并的情况下直接执行factory
+    if(!mod){
+      mod = module[name] = {};
+      if(deps) mod.deps = deps;
+
+      xyModule.factoryHandle(name, mod, factory);
+      return;
     }
 
-    // 如果有依赖，先加载依赖模块
-    if(deps){
-      deps = typeof deps === 'string' ? [deps] : deps;
-      baseUrl = modUrl.slice(0, modUrl.lastIndexOf('/')+1);
-      // 取出当前模块的队列数据
-      data = moduleCache[mod.useKey];
-      
-      urls = data.urls;
-      names = data.names;
+    useKey = mod.useKey;
+    data = moduleCache[useKey];
+    modUrl = mod.url;
 
-      // 遍历依赖模块列表，如果该依赖模块没有加载过，
-      // 则将该依赖模块名和模块路径添加到当前模块加载队列的数据去进行加载
-      for(i = deps.length - 1 ; i >= 0; i--){
-        result = xyModule.parseModId(deps[i], baseUrl);
-        depName = result[0];
-        depMod = module[depName];
-        mod.deps.unshift(depName);
+    mod.status = 2;
+    mod.deps = [];
 
-        if(depMod){
-          deps.splice(i, 1);
-          continue;
-        }else{
-          depMod = module[depName] = {};
-        }
-
-        names.unshift(depName);
-        urls.unshift( (depMod.url = result[1]) );
-      }
-
-      // 将当前模块名和factory存储到最后一个依赖模块的缓存中
-      // 当最后一个依赖模块加载完毕才执行当前模块的factory
-      if( deps.length ){
-        depMod = module[ deps[deps.length - 1] ];   
-        depMod.toDepData = toDepData || [];     
-        depMod.toDepData.unshift({ 
-          name : name, 
-          factory : factory
-        });
-      }
+    // 如果有依赖模块，先加载依赖模块
+    if(deps && deps.length){
+      baseUrl = modUrl.slice(0, modUrl.lastIndexOf('/') + 1);
     }
 
-    if(!deps || !deps.length){
-      // 模块解析完毕，所有的依赖模块也都加载完，但还未输出exports
-      mod.status = 3;
-      
-      args = getExports(mod.deps);  
-      exports = factory.apply(null, args);
-      
-      if(exports !== undefined){
-        // 如果有绑定modify方法，将在正式返回exports前进行修改
-        if(modifyCache[name]){
-          exports = modifyCache[ name ]( exports );
-          // 修改后即删除modify方法
-          delete modifyCache[ name ];
-        }
-        // 存储exports到当前模块的缓存中
-        mod.exports = exports;
-      }
-      
-      // 当前模块加载并执行完毕，exports已可用
-      mod.status = 4;
-      
-      // 执行被依赖模块的factory
-      if( toDepData ){    
-        for( i = 0; i < toDepData.length; i++ ){
-          result = toDepData[i];
-          toDepMod = module[ result.name ];
-          // 被依赖模块完成解析，但还未输出exports
-          toDepMod.status = 3;        
-          
-          args = getExports( toDepMod.deps ); 
-          exports = result.factory.apply( null, args );
-          
-          if( exports !== undefined ){
-            if( modifyCache[result.name] ){
-              exports = modifyCache[ result.name ]( exports );
-              delete modifyCache[ result.name ];
-            }
-            // 缓存被依赖模块的exports到该模块中
-            toDepMod.exports = exports;
-          }
-          // 被依赖模块加载并执行完毕，exports已可用
-          toDepMod.status = 4;
-        }
-      }
+    // 该模块无依赖模块就直接执行其factory
+    if(isLoaded){
+      xyModule.factoryHandle(name, mod, factory, data);
     }
 
+    xyModule.fireFactory(useKey);
+
+    // 无依赖列表将删除依赖列表的数组
     if(!mod.deps.length){
       delete mod.deps;
     }
-
-    // 删除当前模块的被依赖模块的相关数据
-    delete mod.toDepData;
   };
 
   window.XY = XY;
