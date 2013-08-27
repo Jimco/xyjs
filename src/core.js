@@ -8,6 +8,8 @@
   var me = this
     , EMPTY = ''
     , rQuickExpr = /^(?:[^#<]*(<[\w\W]+>)[^>]*$|#([\w\-]*)$)/
+    , rProtocol = /^(http(?:s)?\:\/\/|file\:.+\:\/)/
+    , rModId = /([^\/?]+?)(\.(?:js|css))?(\?.*)?$/
     , rReadyState = /loaded|complete|undefined/
     , eventSplitter = /\s+/
     , moduleCache = {}  // 模块加载时的队列数据存储对象
@@ -194,9 +196,17 @@
      * @param {Object}
      */
     config: function(options){
-      if(options.baseUrl){
-        moduleOptions.baseUrl = options.baseUrl;
+      var baseUrl = options.baseUrl
+        , isHttp = baseUrl.slice(0, 4) === 'http'；
+
+      if(isHttp){
+        moduleOptions.baseUrl = baseUrl;
       }
+      else{
+        moduleOptions.baseUrl = xyModule.mergePath(baseUrl, document.location.href)
+      }
+
+      moduleOptions.charset = XY.merge(moduleOptions.charset, options.charset);
     },
 
     /**
@@ -367,41 +377,100 @@
       },
 
       /**
+       * 获取当前运行的脚本文件的名称
+       * 用于获取匿名模块的模块名
+       */
+      getCurrentScript: function(){
+        var script, scripts, i, stack;
+
+        try{
+          XY[XY.xuid]();
+        }
+        catch(e){
+          stack = e.stack;
+        }
+
+        if(stack){
+          stack = stack.split(/[@ ]/g).pop();
+          stack = stack[0] === '(' ? stack.slice(1, -1) : stack.replace(/\s/, '');
+
+          return stack.replace(/(:\d+)?:\d+$/i, '').match(rModId)[1];
+        }
+
+        scripts = head.getElementsByTagName('script');
+
+        for(i = scripts.length - 1 ; i >= 0; i--){
+          script = scripts[i];
+          if(script.calssName === modClassName && script.readyState === 'interactive'){
+            break;
+          }
+        }
+
+        return script.src.match(rModId)[1];
+      },
+
+      /**
+       * 将模块标识(相对路径)和基础路径合并成新的真正的模块路径(不含模块的文件名)
+       */
+      mergePath: function(id, url){
+        var isHttp = url.slice(0, 4) === 'http'
+          , domain = ''
+          , i = 0
+          , protocol, urlDir, idDir, dirPath, len, dir;
+
+        protocol = url.match(rProtocol)[1];
+        url = url.slice(protocol.length);
+
+        if(isHttp){
+          domain = url.slice( 0, url.indexOf('/') + 1 );
+          url = url.slice(domain.length);
+        }
+
+        urlDir = url.split('/');
+        urlDir.pop();
+
+        idDir = id.splite('/');
+        idDir.pop();
+        len = idDir.length;
+
+        for( ; i < len; i++){
+          dir = idDir[i];
+          if(dir === '..'){
+            urlDir.pop();
+          }
+          else if(dir !== '.'){
+            urlDir.push(dir);
+          }
+        }
+
+        dirPath = urlDir.join('/');
+        dirPath = dirPath === '' ? '' : dirPath + '/';
+        return protocol + domain + dirPath;
+      },
+
+      /**
        * 解析模块标识，返回模块名和模块路径
        * @param  {String} id  模块标识
        * @param  {string} url 基础路径 baseUrl
        * @return {Array}      [模块名， 模块路径]
        */
       parseModId: function(id, url){
-        var modName = id
-          , modUrl, startIndex, endIndex, href, dLen, hLen;
-
-        if(~id.indexOf('/')){
-          startIndex = id.lastIndexOf('/') + 1;
-          endIndex = id.indexOf('.js') ? id.lastIndexOf('.js') : id.length;
-
-          modName = id.slice(startIndex, endIndex);
+        var isAbsoluteId = rProtocol.test( id )        
+          , result = id.match( rModId )
+          , modName = result[1]
+          , suffix = result[2] || '.js'
+          , search = result[3] || ''
+          , baseUrl, modUrl;
+        
+        // 模块标识为绝对路径时，标识就是基础路径
+        if(isAbsoluteId){
+          url = id;
+          id = '';
         }
 
-        if(id.slice(0, 4) === 'http'){
-          modUrl = id;
-        }
-        else if(id.charAt(0) === '.'){
-          url = url.match( /([\w:]+\/\/)(.+)/ );
-          href = url[2].split( '/' );
-          hLen = href.length - 2;
-          dLen = id.match( /\.\.\//g ).length;
-          dLen = dLen > hLen ? hLen : dLen;
-          href.splice( href.length - dLen - 1, dLen );
-          id = id.replace( /(\.\.\/)+/, '' );
-
-          modUrl = url[1] + href.join( '/' ) + id + '.js';
-        }
-        else{
-          modUrl = url + id + '.js';
-        }
-
-        return [modName, modUrl];
+        baseUrl = easyModule.mergePath( id, url );
+        modUrl = baseUrl + modName + suffix + search;
+        return [ modName, modUrl ];
       },
 
       /*
@@ -417,11 +486,13 @@
             , i = 0, j = 0, dep;
 
           for( ; i < len; i++){
-            arr[j++] = module[dep[i]].exports;
+            arr[j++] = module[ dep[i] ].exports;
           }
 
           return arr;
         }
+
+        return [];
       },
 
       /*
