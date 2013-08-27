@@ -25,11 +25,11 @@
 
   /*
    * 将源对象的成员复制到目标对象中
-   * @param { Object } 目标对象
-   * @param { Object } 源对象
-   * @param { Boolean } 是否覆盖 默认为true(覆盖)
-   * @param { Array } 只复制该数组中在源对象中的属性
-   * @return { Object } 目标对象
+   * @param {Object}  target 目标对象
+   * @param {Object}  source 源对象
+   * @param {Boolean} override 是否覆盖 默认为true(覆盖)
+   * @param {Array}   whitelist 只复制该数组中在源对象中的属性
+   * @return {Object} 目标对象
    */
   XY.mix = function( target, source, override, whitelist ){
     if( !target || !source ) return;
