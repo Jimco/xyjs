@@ -126,19 +126,6 @@
       }
     },
 
-    /**
-     * window 加载完毕
-     * @param  {Function} handle 事件处理函数
-     */
-    winLoad: function(handle){
-      var self = this
-        , win = window;
-      self.addEvent(win, 'load', function(){
-        self.removeEvent(win, 'load', arguments.callee);
-        handle();
-      });
-    },
-
     /*
      * 加载模块
      * @param {String} 模块标识
@@ -228,16 +215,6 @@
      */
     EventTarget: {
       on: function(evts, callback, context){
-        // if(name.indexOf(',') > -1){
-        //   var names = name.split(',');
-        //   for(var i = 0; i < names.length; i++){
-        //     this.on(names[i], handle);
-        //   }
-        // }else{
-        //   var ev = __eventTarget[name] || (__eventTarget[name] = []);
-        //   ev.push(handle);
-        // }
-        // return this;
         var evt, calls, node, tail, list;
         
         if(!callback) return this;
@@ -261,23 +238,6 @@
       },
 
       fire: function(evts){
-        // var args = Array.prototype.slice.call(arguments, 0)
-        //   , ev = args.shift()
-        //   , scope = this;
-
-        // if(typeof ev !== 'string'){
-        //   scope = ev;
-        //   ev = args.shift();
-        // }
-
-        // var handle = __eventTarget[ev];
-        // if(handle instanceof Array){
-        //   for(var i = 0, p; p = handle[i++]; ){
-        //     this.eventTag = ev;
-        //     p.apply(scope, args);
-        //   }
-        // }
-        // return this;
         var evt, node, calls, tail, args, all, rest;
 
         if( !(calls = this._callbacks) ) return this;
@@ -308,20 +268,6 @@
       },
 
       off: function(evts, callback, context){
-        // var ev = __eventTarget[name];
-        // if(ev){
-        //   if(!!handle){
-        //     for(var i = 0, p; p = ev[i++]; ){
-        //       if(handle === p){
-        //         ev.splice(i-1, 1);
-        //         i--;
-        //       }
-        //     }
-        //   }else{
-        //     __eventTarget[name] = null;
-        //   }
-        // }
-        // return this;
         var evt, calls, node, tail, cb, ctx;
 
         if( !(calls = this._callbacks) ) return;
