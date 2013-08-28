@@ -589,6 +589,76 @@
     // 如果有依赖模块，先加载依赖模块
     if(deps && deps.length){
       baseUrl = modUrl.slice(0, modUrl.lastIndexOf('/') + 1);
+      factorys = data.factorys;
+      depsData = data.deps[name] = {};
+
+      // 遍历依赖模块列表，如果该依赖模块没加载过，
+      // 则将该依赖模块名和模块路径添加到当前模块加载队列的数据去进行加载
+      for(i = 0; i < deps.length; i++){
+        result = xyModule.parseModId(deps[i], baseUrl);
+        depName = result[0];
+        depMod = module[depName];
+        mod.deps.push(depName);
+        depsData[depName] = true;
+
+        if( depMod ){
+          if( depMod.status !== 4 ){                
+            // 获取第一个重复依赖的模块名，会在稍后进行factorys的顺序调整
+            if(!isRepeat){
+              isRepeat = true;
+              repeatName = depName;
+            }
+            isLoaded = false;    
+          }              
+          deps.splice(i--, 1);
+          continue;
+        }
+        else{
+          depMod = module[ depName ] = {};
+        }
+
+        isLoaded = false;
+        data.length++;
+        names[ names.length++ ] = depName;
+        urls[ urls.length++ ] = depMod.url = result[1];
+      }
+
+      // 只要当前模块有一个依赖模块没加载完就将当前模块的factory添加到factorys中
+      if( !isLoaded ){
+        factorys.unshift({
+            name : name, 
+            factory : factory        
+        });                    
+    
+        // 有重复依赖时将调整factorys的顺序
+        if( repeatName ){
+          repeatDepsData = data.deps[ repeatName ];
+          for( i = factorys.length - 1; i >= 0; i-- ){
+            result = factorys[i].name;
+            if( result === repeatName ){
+              pullIndex = i;                         
+              if(!repeatDepsData){
+                break;
+              }
+            }
+            
+            if( repeatDepsData && repeatDepsData[result] ){
+              insertIndex = i;
+              break;
+            }
+          }
+
+          // 将重复模块的factory插入到该模块最后一个依赖模块的factory后
+          factorys.splice( insertIndex + 1, 0, factorys.splice(pullIndex, 1)[0] );
+          // 将当前模块的factory插入到重复模块的factory后
+          factorys.splice( insertIndex + 1, 0, factorys.shift() );
+        }
+      }
+ 
+      if( names.length ){
+        data.names.unshift( names );
+        data.urls.unshift( urls );
+      }
     }
 
     // 该模块无依赖模块就直接执行其factory
