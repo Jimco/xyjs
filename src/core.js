@@ -6,7 +6,6 @@
 ;(function(window, XY, undefined){
 
   var me = this
-    , EMPTY = ''
     , rQuickExpr = /^(?:[^#<]*(<[\w\W]+>)[^>]*$|#([\w\-]*)$)/
     , rProtocol = /^(http(?:s)?\:\/\/|file\:.+\:\/)/
     , rModId = /([^\/?]+?)(\.(?:js|css))?(\?.*)?$/
