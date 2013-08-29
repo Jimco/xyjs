@@ -182,392 +182,391 @@
       }
     };
 
-    xySelector.finder = {
-      // id选择器
-      ID: function(selector){
-        return document.getElementById( selector.substring(selector.indexOf('#') + 1) );
-      },
+  xySelector.finder = {
+    // id选择器
+    ID: function(selector){
+      return document.getElementById( selector.substring(selector.indexOf('#') + 1) );
+    },
 
-      // class选择器
-      CLASS: function(selector, context) {
-        var elems = []
-          , index = selector.indexOf('.')
-          , tagName = selector.substring(0, index) || '*'
-          , className = ' ' + selector.substring(index + 1) + ' '
-          , i = 0, l = 0, elem, len, name;
+    // class选择器
+    CLASS: function(selector, context) {
+      var elems = []
+        , index = selector.indexOf('.')
+        , tagName = selector.substring(0, index) || '*'
+        , className = ' ' + selector.substring(index + 1) + ' '
+        , i = 0, l = 0, elem, len, name;
 
-        context = xySelector.finder.TAG(tagName, context, true);
-        len = context.length;
+      context = xySelector.finder.TAG(tagName, context, true);
+      len = context.length;
 
-        for( ; i < len; i++){
-          elem = context[i];
-          name = elem.className;
-          if( name && ~(' ' + name + ' ').indexOf(className) ){
-            elems[l++] = elem;
-          }
+      for( ; i < len; i++){
+        elem = context[i];
+        name = elem.className;
+        if( name && ~(' ' + name + ' ').indexOf(className) ){
+          elems[l++] = elem;
         }
+      }
 
-        elem = context = null;
-        return elems;
-      },
+      elem = context = null;
+      return elems;
+    },
 
-      // tag 选择器
-      TAG: function(selector, context, noCheck){
-        var elems = []
-          , prevElem = context[0]
-          , contains = XY.contains
-          , makeArray = XY.makeArray
-          , len = context.length
-          , i = 0, elem;
+    // tag 选择器
+    TAG: function(selector, context, noCheck){
+      var elems = []
+        , prevElem = context[0]
+        , contains = XY.contains
+        , makeArray = XY.makeArray
+        , len = context.length
+        , i = 0, elem;
 
-        noCheck = noCheck || len === 1;
+      noCheck = noCheck || len === 1;
 
-        for( ; i < len; i++){
-          elem = context[i];
-          if(!noCheck){
-            if(!contains(prevElem, elem)){
-              prevElem = elem;
-              elems = makeArray(elem.getElementsByTagName(selector), elems);
-            }
-          }
-          else{
+      for( ; i < len; i++){
+        elem = context[i];
+        if(!noCheck){
+          if(!contains(prevElem, elem)){
+            prevElem = elem;
             elems = makeArray(elem.getElementsByTagName(selector), elems);
           }
         }
+        else{
+          elems = makeArray(elem.getElementsByTagName(selector), elems);
+        }
+      }
 
-        prevElem = elem = context = null;
-        return elems;
-      },
+      prevElem = elem = context = null;
+      return elems;
+    },
 
-      // 属性选择器
-      ATTR: function(selector, context, isFiltered){
-        var elems = []
-          , matches = selector.match(rAttr)
-          , getAttribute = xySelector.getAttribute
-          , attr = matches[1]
-          , symbol = matches[2] || undefined
-          , attrVal = matches[5] || matches[4]
-          , i = 0
-          , j = 0
-          , len, elem, val, matchAttr, sMatches, filterBase, name, tagName;
+    // 属性选择器
+    ATTR: function(selector, context, isFiltered){
+      var elems = []
+        , matches = selector.match(rAttr)
+        , getAttribute = xySelector.getAttribute
+        , attr = matches[1]
+        , symbol = matches[2] || undefined
+        , attrVal = matches[5] || matches[4]
+        , i = 0
+        , j = 0
+        , len, elem, val, matchAttr, sMatches, filterBase, name, tagName;
 
-        selector = selector.substring(0, selector.indexOf('[')) || '*'; 
-        context = isFiltered ? context : xySelector.adapter(selector, context);
+      selector = selector.substring(0, selector.indexOf('[')) || '*'; 
+      context = isFiltered ? context : xySelector.adapter(selector, context);
 
-        len = context.length;
-        sMatches = xySelector.adapter(selector);
-        filterBase = xySelector.filter[ sMatches[0] ];
-        name = sMatches[1];
-        tagName = sMatches[2];
+      len = context.length;
+      sMatches = xySelector.adapter(selector);
+      filterBase = xySelector.filter[ sMatches[0] ];
+      name = sMatches[1];
+      tagName = sMatches[2];
 
-        for( ; i < len; i++){
-          elem = context[i];
-          if(!isFiltered || filterBase(elem, name, tagName)){
-            val = getAttribute(elem, attr);
-            // 使用字符串的方法比正则匹配要快
-            matchAttr = val === null ? 
-              symbol === '!=' && val !== attrVal :
-              symbol === undefined ? val !== null :
-              symbol === '=' ? val === attrVal : 
-              symbol === '!=' ? val !== attrVal :
-              symbol === '*=' ? ~val.indexOf(attrVal) :
-              symbol === '~=' ? ~(' ' + val + ' ').indexOf(' ' + attrVal + ' ') :
-              symbol === '^=' ? val.indexOf(attrVal) === 0 :
-              symbol === '$=' ? val.substring(val.length - attrVal.length) === attrVal :
-              symbol === '|=' ? val === attrVal || val.indexOf(attrVal + '-') === 0 :
-              false;
+      for( ; i < len; i++){
+        elem = context[i];
+        if(!isFiltered || filterBase(elem, name, tagName)){
+          val = getAttribute(elem, attr);
+          // 使用字符串的方法比正则匹配要快
+          matchAttr = val === null ? 
+            symbol === '!=' && val !== attrVal :
+            symbol === undefined ? val !== null :
+            symbol === '=' ? val === attrVal : 
+            symbol === '!=' ? val !== attrVal :
+            symbol === '*=' ? ~val.indexOf(attrVal) :
+            symbol === '~=' ? ~(' ' + val + ' ').indexOf(' ' + attrVal + ' ') :
+            symbol === '^=' ? val.indexOf(attrVal) === 0 :
+            symbol === '$=' ? val.substring(val.length - attrVal.length) === attrVal :
+            symbol === '|=' ? val === attrVal || val.indexOf(attrVal + '-') === 0 :
+            false;
 
-            if(matchAttr){
-              elems[j++] = elem;
-            }
+          if(matchAttr){
+            elems[j++] = elem;
           }
         }
+      }
 
-        elem = context = null;
-        return elems;
-      },
+      elem = context = null;
+      return elems;
+    },
 
-      // 关系选择器
-      RELATIVE: function(selector, context, nextSelector){
-        var matches = xySelector.adapter(nextSelector)
-          , type = matches[0]
-          , filter = xySelector.filter[type] || type
-          , name = matches[1] || nextSelector;
+    // 关系选择器
+    RELATIVE: function(selector, context, nextSelector){
+      var matches = xySelector.adapter(nextSelector)
+        , type = matches[0]
+        , filter = xySelector.filter[type] || type
+        , name = matches[1] || nextSelector;
 
-        return xySelector.filter.relatives[selector](filter, name, matches[2], context);
-      },
+      return xySelector.filter.relatives[selector](filter, name, matches[2], context);
+    },
 
-      // 伪类选择器
-      PSEUDO: function(selector, context, isFiltered){
-        var elems = []
-          , pMatches = selector.match(rPseudo)
-          , pseudoType = pMatches[1]
-          , filterName = pMatches[3]
-          , next = xySelector.next
-          , prev = xySelector.prev
-          , filter = xySelector.filter
-          , sMatches, filterBase, name, selectorType, len, i
-          , parent, child, elem, nextElem, siblingElem;
+    // 伪类选择器
+    PSEUDO: function(selector, context, isFiltered){
+      var elems = []
+        , pMatches = selector.match(rPseudo)
+        , pseudoType = pMatches[1]
+        , filterName = pMatches[3]
+        , next = xySelector.next
+        , prev = xySelector.prev
+        , filter = xySelector.filter
+        , sMatches, filterBase, name, selectorType, len, i
+        , parent, child, elem, nextElem, siblingElem;
 
-        selector = selector.substring( 0, selector.indexOf(':') ) || '*';
-        context = isFiltered ? context : xySelector.adapter(selector, context);
-        len = context.length;
-        sMatches = xySelector.adapter(selector);
-        selectorType = sMatches[0];
-        filterBase = filter[selectorType];
-        name = sMatches[1];
+      selector = selector.substring( 0, selector.indexOf(':') ) || '*';
+      context = isFiltered ? context : xySelector.adapter(selector, context);
+      len = context.length;
+      sMatches = xySelector.adapter(selector);
+      selectorType = sMatches[0];
+      filterBase = filter[selectorType];
+      name = sMatches[1];
 
-        // 处理带'-'的索引(位置)伪类选择器
-        if(~pseudoType.indexOf('-')){
-          var pseudoNames = pseudoType.split('-')
-            , type = pseudoNames[0]
-            , extras = filterName ? filterName.match(/n\s?(\+|\-)\s?(\d+)/) : false
-            , extra = extras ? parseInt(extras[2]) : undefined
-            , isChild = pseudoNames[pseudoNames.length - 1] === 'child'
-            , isLast = pseudoNames[1] === 'last'
-            , first = isLast ? 'lastChild' : 'firstChild'
-            , sibling = isLast ? 'previousSibling' : 'nextSibling'
-            , add = isLast ? 'unshift' : 'push'
-            , filterFn, flag, index;
+      // 处理带'-'的索引(位置)伪类选择器
+      if(~pseudoType.indexOf('-')){
+        var pseudoNames = pseudoType.split('-')
+          , type = pseudoNames[0]
+          , extras = filterName ? filterName.match(/n\s?(\+|\-)\s?(\d+)/) : false
+          , extra = extras ? parseInt(extras[2]) : undefined
+          , isChild = pseudoNames[pseudoNames.length - 1] === 'child'
+          , isLast = pseudoNames[1] === 'last'
+          , first = isLast ? 'lastChild' : 'firstChild'
+          , sibling = isLast ? 'previousSibling' : 'nextSibling'
+          , add = isLast ? 'unshift' : 'push'
+          , filterFn, flag, index;
 
-          if(selectorType !== 'TAG' && !isChild) return elems;
+        if(selectorType !== 'TAG' && !isChild) return elems;
 
-          switch(type){
-            case 'nth': 
-              parent = [];
+        switch(type){
+          case 'nth': 
+            parent = [];
 
-              for(i = 0; i < len; i++){
-                parent[parent.length++] = context[i].parentNode;
-              }
-              parent = xySelector.unique(parent);
+            for(i = 0; i < len; i++){
+              parent[parent.length++] = context[i].parentNode;
+            }
+            parent = xySelector.unique(parent);
 
-              filterFn = xySelector.indexFilter;
+            filterFn = xySelector.indexFilter;
 
-              for( i = 0; child = parent[i++]; ){
-                elem = child[first];
-                index = 0;
+            for( i = 0; child = parent[i++]; ){
+              elem = child[first];
+              index = 0;
 
-                while(elem){
-                  if( elem.nodeType === 1 && (isChild || filterBase(elem, name)) ){
-                    flag = filterFn(filterName, ++index);
-                    if(!isChild || filterBase(elem, name)){
-                      if(extras){
-                        if( (extras[1] === '+' ? index - extra : index + extra) % parseInt(filterName) === 0 ){
-                          elems[add](elem);
-                        } 
-                      }
-                      else if(flag){
+              while(elem){
+                if( elem.nodeType === 1 && (isChild || filterBase(elem, name)) ){
+                  flag = filterFn(filterName, ++index);
+                  if(!isChild || filterBase(elem, name)){
+                    if(extras){
+                      if( (extras[1] === '+' ? index - extra : index + extra) % parseInt(filterName) === 0 ){
                         elems[add](elem);
-                      }
+                      } 
+                    }
+                    else if(flag){
+                      elems[add](elem);
                     }
                   }
-
-                  elem = elem[sibling];
                 }
+
+                elem = elem[sibling];
               }
+            }
 
-            break;
+          break;
 
-            case 'only':
-              context = xySelector.unique(context, true);
-              len = context.length;
+          case 'only':
+            context = xySelector.unique(context, true);
+            len = context.length;
 
-              for(i = 0; i < len; i++){
-                elem = context[i];
+            for(i = 0; i < len; i++){
+              elem = context[i];
 
-                if(isChild){
-                  if( !next(elem) && !prev(elem) ){
-                    elems[elems.length++] = elem;
-                  }
-                }
-                else{
-                  index = 0;
-                  nextElem = elem.nextSibling;
-
-                  while(nextElem){
-                    if( nextElem.nodeType === 1 && filterBase(nextElem, name) ){
-                      index += 1;
-                      break; 
-                    }
-                    nextElem = nextElem.nextSibling;
-                  }
-
-                  if(!index){
-                    elems[elems.length++] = elem;
-                  }
-                }
-              }
-
-            break;
-
-            default:
-              filterFn = type === 'last' ? next : prev;
-
-              for(i = 0; i < len; i++){
-                elem = context[i];
-                siblingElem = filterFn(elem);
-
-                flag = isChild ? !siblingElem : (!siblingElem || siblingElem.tagName !== name);
-
-                if( flag && filterBase(elem, name) ){
+              if(isChild){
+                if( !next(elem) && !prev(elem) ){
                   elems[elems.length++] = elem;
                 }
               }
-          }
+              else{
+                index = 0;
+                nextElem = elem.nextSibling;
 
+                while(nextElem){
+                  if( nextElem.nodeType === 1 && filterBase(nextElem, name) ){
+                    index += 1;
+                    break; 
+                  }
+                  nextElem = nextElem.nextSibling;
+                }
+
+                if(!index){
+                  elems[elems.length++] = elem;
+                }
+              }
+            }
+
+          break;
+
+          default:
+            filterFn = type === 'last' ? next : prev;
+
+            for(i = 0; i < len; i++){
+              elem = context[i];
+              siblingElem = filterFn(elem);
+
+              flag = isChild ? !siblingElem : (!siblingElem || siblingElem.tagName !== name);
+
+              if( flag && filterBase(elem, name) ){
+                elems[elems.length++] = elem;
+              }
+            }
         }
-        // 处理非索引伪类选择器
-        else{
-          if(filterName) sMatches = xySelector.adapter(filterName);
-          
-          for(i = 0; i < len; i++){
-            elem = context[i];
-            if( filter.pseudos[pseudoType](elem, sMatches[1], sMatches[2], filter[sMatches[0]]) ){
-              elems[elems.length++] = elem;
+
+      }
+      // 处理非索引伪类选择器
+      else{
+        if(filterName) sMatches = xySelector.adapter(filterName);
+        
+        for(i = 0; i < len; i++){
+          elem = context[i];
+          if( filter.pseudos[pseudoType](elem, sMatches[1], sMatches[2], filter[sMatches[0]]) ){
+            elems[elems.length++] = elem;
+          }
+        }
+      }
+
+      parent = child = elem = nextElem = siblingElem = context = null;
+      return elems;
+    }
+  };
+
+  xySelector.filter = {
+    ID: function(elem, name, tagName){
+      var isTag = tagName === '' || elem.tagName === tagName;
+      return isTag && elem.id === name;
+    },
+
+    CLASS: function(elem, name, tagName){
+      var className = elem.className
+        , isTag = tagName === '' || elem.tagName === tagName;
+
+      return isTag && className && ~(' ' + className + ' ').indexOf(name); 
+    },
+
+    TAG: function(elem, name){
+      return elem.tagName === name;
+    },
+
+    // 伪类选择器的过滤器
+    pseudos: {
+      empty: function(elem){
+        return !elem.firstChild;
+      },
+
+      not: function(elem, name, tagName, filter){
+        return !filter(elem, name, tagName);
+      },
+
+      form : function( elem, attr, val ){
+        return elem.tagName === 'INPUT' && elem.type !== 'hidden' && elem[attr] === val; 
+      },  
+      
+      enabled : function( elem ){
+        return this.form( elem, 'disabled', false );
+      },
+      
+      disabled : function( elem ){
+        return this.form( elem, 'disabled', true );
+      },
+      
+      checked : function( elem ){
+        return this.form( elem, 'checked', true );
+      },
+      
+      selected : function( elem ){
+        return elem.tagName === 'OPTION' && elem.selected === true;
+      },
+
+      hidden : function( elem ){      
+        return ( !elem.offsetWidth && !elem.offsetHeight ) || ( elem.currentStyle && elem.currentStyle.display === "none" );
+      },
+      
+      visible : function( elem ){
+        return !this.hidden( elem );
+      },
+
+      animated : function( elem ){
+        return xyData.data( elem, 'anim', 'animQueue' ) !== undefined;
+      }
+
+    },
+
+    // 关系选择器的过滤器
+    relatives: {
+      // 子节点
+      '>': function(filter, name, tagName, context){
+        var isType = XY.isString(filter)
+          , elems = []
+          , i = 0
+          , l = 0
+          , len = context.length
+          , child, clen, children, j;
+
+        for( ; i < len; i++){
+          children = context[i].childNodes
+          clen = children.length;
+
+          for(j = 0; j < clen; j++){
+            child = children[j];
+            if( child.nodeType === 1 && (isType || filter(child, name, tagName)) ){
+              elems[l++] = child;
             }
           }
         }
 
-        parent = child = elem = nextElem = siblingElem = context = null;
-        return elems;
+        child = children = context = null;
+        return isType ? xySelector.finder[filter](name, elems, true) : elems;
+      },
+
+      // 相邻节点
+      '+': function(filter, name, tagName, context){
+        var isType = XY.isString(filter)
+          , elems = []
+          , len = context.length
+          , i = 0
+          , l = 0
+          , nextElem;
+
+        for( ; i < len; i++){
+          nextElem = xySelector.next(context[i]);
+          if( nextElem && (isType || filter(nextElem, name, tagName)) ){
+            elems[l++] = nextElem;
+          }
+        }
+
+        nextElem = context = null;
+        return isType ? xySelector.finder[filter](name, elems, true) : elems;
+      },
+
+      // 同级节点
+      '~': function(filter, name, tagName, context){
+        var isType = XY.isString(filter)
+          , elems = []
+          , i = 0
+          , l = 0
+          , len, nextElem;
+
+        context = xySelector.unique(context, true);
+        len = context.length;
+
+        for( ; i < len; i++){
+          nextElem = context[i].nextSibling;
+          while(nextElem){
+            if( nextElem.nodeType === 1 && (isType || filter(nextElem, name, tagName)) ){
+              elems[l++] = nextElem; 
+            }
+            nextElem = nextElem.nextSibling;
+          }
+        }
+
+        nextElem = context = null;
+        return isType ? xySelector.finder[filter](name, elems, true) : elems;
       }
     }
-
-    xySelector.filter = {
-      ID: function(elem, name, tagName){
-        var isTag = tagName === '' || elem.tagName === tagName;
-        return isTag && elem.id === name;
-      },
-
-      CLASS: function(elem, name, tagName){
-        var className = elem.className
-          , isTag = tagName === '' || elem.tagName === tagName;
-
-        return isTag && className && ~(' ' + className + ' ').indexOf(name); 
-      },
-
-      TAG: function(elem, name){
-        return elem.tagName === name;
-      },
-
-      // 伪类选择器的过滤器
-      pseudos: {
-        empty: function(elem){
-          return !elem.firstChild;
-        },
-
-        not: function(elem, name, tagName, filter){
-          return !filter(elem, name, tagName);
-        },
-
-        form : function( elem, attr, val ){
-          return elem.tagName === 'INPUT' && elem.type !== 'hidden' && elem[attr] === val; 
-        },  
-        
-        enabled : function( elem ){
-          return this.form( elem, 'disabled', false );
-        },
-        
-        disabled : function( elem ){
-          return this.form( elem, 'disabled', true );
-        },
-        
-        checked : function( elem ){
-          return this.form( elem, 'checked', true );
-        },
-        
-        selected : function( elem ){
-          return elem.tagName === 'OPTION' && elem.selected === true;
-        },
-
-        hidden : function( elem ){      
-          return ( !elem.offsetWidth && !elem.offsetHeight ) || ( elem.currentStyle && elem.currentStyle.display === "none" );
-        },
-        
-        visible : function( elem ){
-          return !this.hidden( elem );
-        },
-
-        animated : function( elem ){
-          return xyData.data( elem, 'anim', 'animQueue' ) !== undefined;
-        }
-
-      },
-
-      // 关系选择器的过滤器
-      relatives: {
-        // 子节点
-        '>': function(filter, name, tagName, context){
-          var isType = XY.isString(filter)
-            , elems = []
-            , i = 0
-            , l = 0
-            , len = context.length
-            , child, clen, children, j;
-
-          for( ; i < len; i++){
-            children = context[i].childNodes
-            clen = children.length;
-
-            for(j = 0; j < clen; j++){
-              child = children[j];
-              if( child.nodeType === 1 && (isType || filter(child, name, tagName)) ){
-                elems[l++] = child;
-              }
-            }
-          }
-
-          child = children = context = null;
-          return isType ? xySelector.finder[filter](name, elems, true) : elems;
-        },
-
-        // 相邻节点
-        '+': function(filter, name, tagName, context){
-          var isType = XY.isString(filter)
-            , elems = []
-            , len = context.length
-            , i = 0
-            , l = 0
-            , nextElem;
-
-          for( ; i < len; i++){
-            nextElem = xySelector.next(context[i]);
-            if( nextElem && (isType || filter(nextElem, name, tagName)) ){
-              elems[l++] = nextElem;
-            }
-          }
-
-          nextElem = context = null;
-          return isType ? xySelector.finder[filter](name, elems, true) : elems;
-        },
-
-        // 同级节点
-        '~': function(filter, name, tagName, context){
-          var isType = XY.isString(filter)
-            , elems = []
-            , i = 0
-            , l = 0
-            , len, nextElem;
-
-          context = xySelector.unique(context, true);
-          len = context.length;
-
-          for( ; i < len; i++){
-            nextElem = context[i].nextSibling;
-            while(nextElem){
-              if( nextElem.nodeType === 1 && (isType || filter(nextElem, name, tagName)) ){
-                elems[l++] = nextElem; 
-              }
-              nextElem = nextElem.nextSibling;
-            }
-          }
-
-          nextElem = context = null;
-          return isType ? xySelector.finder[filter](name, elems, true) : elems;
-        }
-      }
-    };
-
+  };
 
   XY.mix(XY, {
 
