@@ -66,7 +66,16 @@
    */
   XY.mix(XY, {
 
-    version: '0.0.1',
+    VERSION: '0.0.1',
+
+    /**
+     * @property {string} PATH 脚本库的运行路径
+     * @type string
+     */
+    PATH: (function() {
+      var sTags = document.getElementsByTagName("script");
+      return sTags[sTags.length - 1].src.replace(/(^|\/)[^\/]+\/[^\/]+$/, "$1");
+    }()),
 
     __uuid__: 2,
 
@@ -183,7 +192,7 @@
      */
     config: function(options){
       var baseUrl = options.baseUrl
-        , isHttp = baseUrl.slice(0, 4) === 'http'；
+        , isHttp = baseUrl.slice(0, 4) === 'http';
 
       if(isHttp){
         moduleOptions.baseUrl = baseUrl;
