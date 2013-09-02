@@ -277,6 +277,87 @@
   };
 
   /**
+   * 异步加载脚本
+   * @method loadJs
+   * @static
+   * @param { String } url Javascript文件路径
+   * @param { Function } callback (Optional) Javascript加载后的回调函数
+   * @param { Option } options (Optional) 配置选项，例如charset
+   */
+  XY.loadJs = function(url, callback, options) {
+    options = options || {};
+    var head = document.getElementsByTagName('head')[0] || document.documentElement
+      , script = document.createElement('script')
+      , done = false;
+
+    script.src = url;
+    if (options.charset) {
+      script.charset = options.charset;
+    }
+    if ( 'async' in options ){
+      script.async = options['async'] || '';
+    }
+    script.onerror = script.onload = script.onreadystatechange = function() {
+      if(!done && (!this.readyState || this.readyState == "loaded" || this.readyState == "complete")){
+        done = true;
+
+        if(callback) callback();
+        script.onerror = script.onload = script.onreadystatechange = null;
+        head.removeChild(script);
+      }
+    };
+    head.insertBefore(script, head.firstChild);
+  };
+
+  /**
+   * 加载jsonp脚本
+   * @method loadJsonp
+   * @static
+   * @param { String } url Javascript文件路径
+   * @param { Function } callback (Optional) jsonp的回调函数
+   * @param { Option } options (Optional) 配置选项，目前除支持loadJs对应的参数外，还支持：
+      {RegExp} callbackReplacer (Optional) 回调函数的匹配正则。默认是：/%callbackfun%/ig；如果url里没找到匹配，则会添加“callback=%callbackfun%”在url后面
+      {Function} oncomplete (Optional) Javascript加载后的回调函数
+   */
+  XY.loadJsonp = (function(){
+    var seq = new Date() * 1;
+    return function (url , callback , options){
+      options = options || {};
+      var funName = "XYJsonp" + seq++
+        , callbackReplacer = options .callbackReplacer || /%callbackfun%/ig;
+
+      window[funName] = function (data){
+        if(callback) callback(data);
+        window[funName] = null;
+      };
+
+      if(callbackReplacer.test(url)){
+        url = url.replace(callbackReplacer,funName);
+      } 
+      else{
+        url += (/\?/.test( url ) ? '&' : '?') + 'callback=' + funName;
+      }
+      XY.loadJs(url , options.oncomplete , options);
+    };
+  }());
+
+
+  /**
+   * 加载css样式表
+   * @method loadCss
+   * @static
+   * @param { String } url Css文件路径
+   */
+  XY.loadCss = function(url) {
+    var head = document.getElementsByTagName('head')[0] || document.documentElement,
+    css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.type = 'text/css';
+    css.href = url;
+    head.insertBefore(css, head.firstChild);
+  };
+
+  /**
    * base64 编码
    */
   XY.base64Encode = function(input){
