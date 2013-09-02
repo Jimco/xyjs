@@ -329,6 +329,9 @@
       window[funName] = function (data){
         if(callback) callback(data);
         window[funName] = null;
+        try{
+          delete window[funName];
+        }catch(e){};
       };
 
       if(callbackReplacer.test(url)){
