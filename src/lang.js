@@ -109,7 +109,33 @@
   XY.has = function(obj, key){
     return ObjProto.hasOwnProperty.call(obj, key);
   };
-  
+
+  /**
+   * 数组去重
+   * @param  {Array} arr  待处理的数组
+   * @return {Array}     去重得到的新数组
+   */
+  XY.distinct = function(arr){
+    var tempArray = []
+      , temp = ''
+      , index = 0;
+
+    for(var i = 0; i < arr.length; i++){
+      temp = arr[i];
+      for(var j = 0; j < tempArray.length; j++){
+        if(temp === tempArray[j]){
+          temp = '';
+          break;
+        }
+      }
+      if(!temp == null || temp !== ''){
+        tempArray[index] = temp;
+        index++;
+      }
+    }
+    return tempArray;
+  };
+
   /*
    * 将对象转换成真实数组
    * 常用于将arguments, NodeList等array-like对象转换成真实数组
