@@ -157,7 +157,7 @@
     return xml;
   };
   
-  XY.parseJSON = function( data ) {
+  XY.encodeJSON = function( data ) {
     if ( !data || !XY.isString(data) ){
       return null;
     }
