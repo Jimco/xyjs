@@ -490,8 +490,7 @@
   
   // 首字母大写转换
   XY.capitalize = function( str ){
-    var firstStr = str.charAt(0);
-    return firstStr.toUpperCase() + str.replace( firstStr, '' );
+    return str.slice(0, 1).toUpperCase() + str.slice(1);
   };
 
   window.XY = XY;
