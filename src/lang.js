@@ -12,7 +12,10 @@
     , rSelectForm = /^(?:select|form)$/i
     , rValidchars = /^[\],:{}\s]*$/  
     
-    , toString = Object.prototype.toString
+    , ObjProto = Object.prototype
+    , toString = ObjProto.toString
+    , nativeForeach = Array.prototype.forEach
+    , breaker = {}
     , tplCache = {};
 
   /**
@@ -77,26 +80,34 @@
     return obj && typeof obj === 'object' && 'setInterval' in obj;
   };
 
-  /*
+  /**
    * 遍历对象并执行回调
-   * obj: 对象
-   * fn: 回调函数(如果回调函数的返回值为false将退出循环)
-   * context: 上下文
-   * return: Object 
+   * @param  {Objece|Array} obj    待遍历对象或数组
+   * @param  {Function} iterator   回调函数
+   * @param  {Object} context      上下文
    */
-  XY.each = function( obj, fn, context ){    
-    var isObj = obj.length === undefined || typeof obj === 'function'
-      , i;      
-    
-    if( isObj ){
-      for( i in obj ){
-        if( fn.call(context, i, obj[i]) === false ){
-          break;
+  XY.each = function( obj, iterator, context ){    
+    if(obj === null) return;
+
+    if(nativeForeach && obj.forEach === nativeForeach){
+      obj.forEach(iterator, context);
+    }
+    else if(obj.length === +obj.length){
+      for(var i = 0; i < obj.length; i++){
+        if( i in obj && iterator.call(context, obj[i], i, obj) === breaker) return;
+      }
+    }
+    else{
+      for(var key in obj){
+        if( XY.has(obj, key) ){
+          if( iterator.call(context, obj[key], key, obj) === breaker) return;
         }
       }
     }
-    
-    return obj;
+  };
+
+  XY.has = function(obj, key){
+    return ObjProto.hasOwnProperty.call(obj, key);
   };
   
   /*
@@ -492,6 +503,44 @@
   XY.capitalize = function( str ){
     return str.slice(0, 1).toUpperCase() + str.slice(1);
   };
+
+  /** 
+   * 解析url或search字符串。
+   * @method queryUrl
+   * @static
+   * @param {String} s url或search字符串
+   * @param {String} key (Optional) 参数名。
+   * @return {Json|String|Array|undefined} 如果key为空，则返回解析整个字符串得到的Json对象；否则返回参数值。有多个参数，或参数名带[]的，参数值为Array。
+   */
+  XY.queryUrl = function(url, key) {
+    url = url.replace(/^[^?=]*\?/ig, '').split('#')[0]; //去除网址与hash信息
+    var json = {};
+    //考虑到key中可能有特殊符号如“[].”等，而[]却有是否被编码的可能，所以，牺牲效率以求严谨，就算传了key参数，也是全部解析url。
+    url.replace(/(^|&)([^&=]+)=([^&]*)/g, function (a, b, key , value){
+      //对url这样不可信的内容进行decode，可能会抛异常，try一下；另外为了得到最合适的结果，这里要分别try
+      try {
+      key = decodeURIComponent(key);
+      } catch(e) {}
+
+      try {
+      value = decodeURIComponent(value);
+      } catch(e) {}
+
+      if (!(key in json)) {
+        json[key] = /\[\]$/.test(key) ? [value] : value; //如果参数名以[]结尾，则当作数组
+      }
+      else if (json[key] instanceof Array) {
+        json[key].push(value);
+      }
+      else {
+        json[key] = [json[key], value];
+      }
+    });
+    return key ? json[key] : json;
+  };
+
+
+
 
   window.XY = XY;
 
