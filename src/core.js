@@ -6,23 +6,13 @@
 ;(function(window, XY, undefined){
 
   var me = this
-    , rQuickExpr = /^(?:[^#<]*(<[\w\W]+>)[^>]*$|#([\w\-]*)$)/
-    , rProtocol = /^(http(?:s)?\:\/\/|file\:.+\:\/)/
-    , rModId = /([^\/?]+?)(\.(?:js|css))?(\?.*)?$/
-    , rReadyState = /loaded|complete|undefined/
     , eventSplitter = /\s+/
-    , moduleCache = {}  // 模块加载时的队列数据存储对象
-    , modifyCache = {}  // modify的临时数据存储对象
-
-    , head = document.head || 
-      document.getElementsByTagName( 'head' )[0] || 
-      document.documentElement
-    , baseElem = head.getElementsByTagName( 'base' )[0]
-
-    , moduleOptions = {
-      baseUrl: null,
-      charset: {}
-    };
+    // 浏览器判定的正则    
+    , rUA = [ /ms(ie)\s(\d\.\d)/,                       // IE
+            /(chrome)\/(\d+\.\d+)/,                     // chrome
+            /(firefox)\/(\d+\.\d+)/,                    // firefox                  
+            /version\/(\d+\.\d+)(?:\.\d)?\s(safari)/,   // safari
+            /(opera)(?:.*version)\/([\d.]+)/ ];         // opera;
 
   /*
    * 将源对象的成员复制到目标对象中
@@ -79,9 +69,30 @@
 
     __uuid__: 2,
 
-    browser: {}, // 存储浏览器名和版本数据
-
-    module: {}, // 模块加载器缓存对象
+    // 存储浏览器名和版本数据
+    browser: (function(){
+      var ua = navigator.userAgent.toLowerCase()
+        , len = rUA.length
+        , i = 0
+        , matches;
+      
+      for( ; i < len; i++ ){
+        if( (matches = ua.match(rUA[i])) ) break;
+      }
+      
+      if(!matches){
+          matches = [];
+      }
+      if(matches[2] === 'safari'){
+        matches[2] = matches[1];
+        matches[1] = 'safari';
+      }
+      
+      return {
+          browser : matches[1] || '',
+          version : matches[2] || 0
+      };
+    }()),
 
     /**
      * 生成一个随机 id
@@ -115,93 +126,29 @@
     },
 
     /**
-     * DOM文档树加载完毕
-     * @param  {Function} handle 事件处理函数
+     * 获得一个命名空间
+     * @param {String} sSpace 命名空间符符串。如果命名空间不存在，则自动创建。
+     * @param {Object} root (Optional) 命名空间的起点。当没传root时：如果sSpace以“.”打头，则是默认为XY为根，否则默认为window。
+     * @return {any} 返回命名空间对应的对象
      */
-    ready: function(handle){
-      var doc = document;
-      if(doc.addEventListener){
-        doc.addEventListener('DOMContentLoaded', function(){
-          doc.removeEventListener('DOMContentLoaded', arguments.callee, false);
-          handle();
-        }, false);
-      }else if(doc.attachEvent){
-        doc.attachEvent('onreadystatechange', function(){
-          if(doc.readyState === 'interactive' || doc.readyState === 'complete'){
-            doc.detachEvent('onreadystatechange', arguments.callee);
-            handle();
-          }
-        })
-      }
-    },
-
-    /*
-     * 加载模块
-     * @param {String} 模块标识
-     * @param {Function} 回调函数
-     */
-    use: function(ids, fn){
-      ids = typeof ids === 'string' ? [ids] : ids;
-
-      var module = XY.module
-        , modUrls = []
-        , modNames = []
-        , namesCache = []
+    namespace: function(sSpace, root){
+      var arr = sSpace.split('.')
         , i = 0
-        , mod, modName, modUrl, result, useKey;
+        , nameI;
 
-      for( ; i < ids.length; i++){
-        result = xyModule.parseModId(ids[i], moduleOptions.baseUrl);
-        modName = result[0];
-        modUrl = result[1];
-        mod = module[modName];
-        if(!mod) mod = module[modName] = {};
-
-        // 将模块名和模块路径添加到队列中
-        modNames[modNames.length++] = modName;
-        modUrls[modUrls.length++] = modUrl;
+      if(sSpace.indexOf('.') === 0){
+        i = 1;
+        root = root || XY;
       }
+      root = root || window;
 
-      // 生成队列随机 key
-      useKey = modNames.join('_') + '_' + XY.xuid + (++XY.__uuid__);
-      // 复制模块名，在输出exports时会用到
-      namesCache = namesCache.concat(modNames);
-
-      moduleCache[useKey] = {
-        callback: fn,
-        names: modNames,
-        namesCache: namesCache,
-        urls: modUrls
-      };
-
-      xyModule.load(useKey);
-    },
-
-    /*
-     * 给模块添加modify方法以便在正式返回exports前进行修改
-     * @param {String} 模块名
-     * @param {Function} 修改exports的函数，该函数至少要有一个返回值
-     */
-    modify: function(name, fn){
-      modifyCache[name] = fn;
-    },
-
-    /*
-     * 修改模块加载器的配置
-     * @param {Object}
-     */
-    config: function(options){
-      var baseUrl = options.baseUrl
-        , isHttp = baseUrl.slice(0, 4) === 'http';
-
-      if(isHttp){
-        moduleOptions.baseUrl = baseUrl;
+      for( ; nameI = arr[i++]; ){
+        if(!root[nameI]){
+          root[nameI] = {};
+        }
+        root = root[nameI];
       }
-      else{
-        moduleOptions.baseUrl = xyModule.mergePath(baseUrl, document.location.href)
-      }
-
-      moduleOptions.charset = XY.merge(moduleOptions.charset, options.charset);
+      return root;
     },
 
     /**
@@ -307,382 +254,24 @@
 
         return this;
       }
-    }
+    },
+
+    /**
+     * XY无冲突化，还原可能被抢用的window.XY变量
+     * @method noConflict
+     * @static
+     * @return {json} 返回XY的命名空间 
+     */
+    noConflict: (function() {
+      var _previousXY = window.XY;
+      return function() {
+        window.XY = _previousXY;
+        return XY;
+      }
+    }())
 
   });
-
-  XY.xuid = XY.guid();
   
-  var xyModule = {
-      // 初始化模块加载器时获取 baseUrl(即当前 js 文件加载的 url)
-      init: function(){
-        var scripts = document.getElementsByTagName('script')
-          , script = scripts[scripts.length - 1]
-          , initMod = script.getAttribute('data-main')
-          , url = script.hasAttribute ? script.src : script.getAttribute('src', 4);
-
-        moduleOptions.baseUrl = url.slice(0, url.lastIndexOf('/') + 1);
-
-        if(initMod){
-          XY.use(initMod);
-        }
-
-        scripts = script = null;
-      },
-
-      /**
-       * 获取当前运行的脚本文件的名称
-       * 用于获取匿名模块的模块名
-       */
-      getCurrentScript: function(){
-        var script, scripts, i, stack;
-
-        try{
-          XY[XY.xuid]();
-        }
-        catch(e){
-          stack = e.stack;
-        }
-
-        if(stack){
-          stack = stack.split(/[@ ]/g).pop();
-          stack = stack[0] === '(' ? stack.slice(1, -1) : stack.replace(/\s/, '');
-
-          return stack.replace(/(:\d+)?:\d+$/i, '').match(rModId)[1];
-        }
-
-        scripts = head.getElementsByTagName('script');
-
-        for(i = scripts.length - 1 ; i >= 0; i--){
-          script = scripts[i];
-          if(script.calssName === modClassName && script.readyState === 'interactive'){
-            break;
-          }
-        }
-
-        return script.src.match(rModId)[1];
-      },
-
-      /**
-       * 将模块标识(相对路径)和基础路径合并成新的真正的模块路径(不含模块的文件名)
-       */
-      mergePath: function(id, url){
-        var isHttp = url.slice(0, 4) === 'http'
-          , domain = ''
-          , i = 0
-          , protocol, urlDir, idDir, dirPath, len, dir;
-
-        protocol = url.match(rProtocol)[1];
-        url = url.slice(protocol.length);
-
-        if(isHttp){
-          domain = url.slice( 0, url.indexOf('/') + 1 );
-          url = url.slice(domain.length);
-        }
-
-        urlDir = url.split('/');
-        urlDir.pop();
-
-        idDir = id.splite('/');
-        idDir.pop();
-        len = idDir.length;
-
-        for( ; i < len; i++){
-          dir = idDir[i];
-          if(dir === '..'){
-            urlDir.pop();
-          }
-          else if(dir !== '.'){
-            urlDir.push(dir);
-          }
-        }
-
-        dirPath = urlDir.join('/');
-        dirPath = dirPath === '' ? '' : dirPath + '/';
-        return protocol + domain + dirPath;
-      },
-
-      /**
-       * 解析模块标识，返回模块名和模块路径
-       * @param  {String} id  模块标识
-       * @param  {string} url 基础路径 baseUrl
-       * @return {Array}      [模块名， 模块路径]
-       */
-      parseModId: function(id, url){
-        var isAbsoluteId = rProtocol.test( id )        
-          , result = id.match( rModId )
-          , modName = result[1]
-          , suffix = result[2] || '.js'
-          , search = result[3] || ''
-          , baseUrl, modUrl;
-        
-        // 模块标识为绝对路径时，标识就是基础路径
-        if(isAbsoluteId){
-          url = id;
-          id = '';
-        }
-
-        baseUrl = easyModule.mergePath( id, url );
-        modUrl = baseUrl + modName + suffix + search;
-        return [ modName, modUrl ];
-      },
-
-      /*
-       * 将依赖模块列表的外部接口(exports)合并成arguments
-       * @param {Array} deps 依赖模块列表
-       * @param {Array} 返回值数组
-       */
-      getExports: function(deps){
-        if(deps){
-          var len = deps.length
-            , module = XY.module
-            , arr = []
-            , i = 0, j = 0, dep;
-
-          for( ; i < len; i++){
-            arr[j++] = module[ dep[i] ].exports;
-          }
-
-          return arr;
-        }
-
-        return [];
-      },
-
-      isLoaded: function(mod){
-
-      },
-
-      factoryHandle: function(name, mod, factory, data){
-
-      },
-
-      fireFactory: function(useKey){
-
-      },
-
-      complete: function(mod){
-
-      },
-
-      create: function(url, name, useKey){
-
-      },
-
-      /*
-       * 加载模块
-       * @param {String} 用来访问存储在moduleCache中的数据的属性名
-       */ 
-      load: function(useKey){
-        var data = moduleCache[useKey]
-          , urls = data.urls
-          , charset = moduleOptions.charset
-          , url = urls.shift()
-          , name = data.names.shift()
-          , module = XY.module
-          , mod = module[name]
-          , script
-
-          // script 加载完成后执行的函数
-          , complete = function(){
-              // 队列没加载完将继续加载
-              if(url.length){
-                xyModule.load(useKey);
-              }
-              else{
-                var namesCache = data.namesCache
-                  , len = namesCache.length
-                  , args = []
-                  , i = 0, j = 0, result;
-
-                // 合并模块的 exports 为 arguments
-                for( ; i < len; i++){
-                  args[j++] = module[namesCache[i]].exports;
-                }
-
-                // 执行 use 的回调
-                if(data.callback){
-                  data.callback.apply(null, args);
-                }
-
-                // 删除队列数据
-                delete moduleCache[useKey];
-              }
-
-              // 删除模块缓存中的队列属性值
-              delete mod.useKey;
-            };
-
-        // 已加载过的模块不重复加载，但如果有回调还是需要执行回调
-        if(mod.status === 4){
-          complete();
-          return;
-        }
-
-        script = document.createElement('script');
-        script.async = 'async';
-        script.src = url;
-
-        // 如果有配置 charset，则指定 charset
-        if(charset[name]){
-          script.charset = charset[name];
-        }
-
-        script.onload = script.onerror = script.onreadystatechange = function(){
-          if(rReadyState.test(script.readyState)){
-            script.onload = script.onerror = script.onreadystatechange = null;
-            head.removeChild(script);
-            script = null;
-
-            complete();
-          }
-        }
-
-        mod.useKey = useKey;
-        mod.status = 1; // 开始加载模块
-
-        baseElem ? head.insertBefore(script, head.firstChild) : head.appendChild(script); 
-      }
-    };
-
-  
-  /**
-   * 定义模块全局方法(AMD规范)
-   * @param  {String} name    模块名
-   * @param  {String/Array} deps    依赖模块列表，单个可以用字符串形式传参，多个用数组形式传参
-   * @param  {Function} factory 工厂函数，模块内容(参数对应依赖模块的外部接口)
-   */
-  window.define = function(name, deps, factory){
-
-    if(typeof name !== 'string'){
-      if(typeof name === 'function'){
-        factory = name;
-      }
-      else{
-        factory = deps;
-        deps = name;
-      }
-      name = xyModule.getCurrentScript()
-    }
-    else if(deps !== undefined && factory === undefined){
-      factory = deps;
-      deps = null;
-    };
-
-    var module = XY.module
-      , mod = module[name]
-      , isRepeat = false
-      , isLoaded = true
-      , names = []
-      , urls = []
-      , insertIndex = 0
-      , pullIndex = 0
-      , useKey, data, modUrl, factorys, baseUrl, depMod, depName, result, exports, args, depsData, repeatDepsData, i, repeatName;
-
-    // 在模块都合并的情况下直接执行factory
-    if(!mod){
-      mod = module[name] = {};
-      if(deps) mod.deps = deps;
-
-      xyModule.factoryHandle(name, mod, factory);
-      return;
-    }
-
-    useKey = mod.useKey;
-    data = moduleCache[useKey];
-    modUrl = mod.url;
-
-    mod.status = 2;
-    mod.deps = [];
-
-    // 如果有依赖模块，先加载依赖模块
-    if(deps && deps.length){
-      baseUrl = modUrl.slice(0, modUrl.lastIndexOf('/') + 1);
-      factorys = data.factorys;
-      depsData = data.deps[name] = {};
-
-      // 遍历依赖模块列表，如果该依赖模块没加载过，
-      // 则将该依赖模块名和模块路径添加到当前模块加载队列的数据去进行加载
-      for(i = 0; i < deps.length; i++){
-        result = xyModule.parseModId(deps[i], baseUrl);
-        depName = result[0];
-        depMod = module[depName];
-        mod.deps.push(depName);
-        depsData[depName] = true;
-
-        if( depMod ){
-          if( depMod.status !== 4 ){                
-            // 获取第一个重复依赖的模块名，会在稍后进行factorys的顺序调整
-            if(!isRepeat){
-              isRepeat = true;
-              repeatName = depName;
-            }
-            isLoaded = false;    
-          }              
-          deps.splice(i--, 1);
-          continue;
-        }
-        else{
-          depMod = module[ depName ] = {};
-        }
-
-        isLoaded = false;
-        data.length++;
-        names[ names.length++ ] = depName;
-        urls[ urls.length++ ] = depMod.url = result[1];
-      }
-
-      // 只要当前模块有一个依赖模块没加载完就将当前模块的factory添加到factorys中
-      if( !isLoaded ){
-        factorys.unshift({
-            name : name, 
-            factory : factory        
-        });                    
-    
-        // 有重复依赖时将调整factorys的顺序
-        if( repeatName ){
-          repeatDepsData = data.deps[ repeatName ];
-          for( i = factorys.length - 1; i >= 0; i-- ){
-            result = factorys[i].name;
-            if( result === repeatName ){
-              pullIndex = i;                         
-              if(!repeatDepsData){
-                break;
-              }
-            }
-            
-            if( repeatDepsData && repeatDepsData[result] ){
-              insertIndex = i;
-              break;
-            }
-          }
-
-          // 将重复模块的factory插入到该模块最后一个依赖模块的factory后
-          factorys.splice( insertIndex + 1, 0, factorys.splice(pullIndex, 1)[0] );
-          // 将当前模块的factory插入到重复模块的factory后
-          factorys.splice( insertIndex + 1, 0, factorys.shift() );
-        }
-      }
- 
-      if( names.length ){
-        data.names.unshift( names );
-        data.urls.unshift( urls );
-      }
-    }
-
-    // 该模块无依赖模块就直接执行其factory
-    if(isLoaded){
-      xyModule.factoryHandle(name, mod, factory, data);
-    }
-
-    xyModule.fireFactory(useKey);
-
-    // 无依赖列表将删除依赖列表的数组
-    if(!mod.deps.length){
-      delete mod.deps;
-    }
-  };
-
   window.XY = XY;
 
 })(window, window.XY || {});
