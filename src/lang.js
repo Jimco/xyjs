@@ -86,7 +86,7 @@
    * @param  {Function} iterator   回调函数
    * @param  {Object} context      上下文
    */
-  XY.each = function( obj, iterator, context ){    
+  XY.each = function( obj, iterator, context ){
     if(obj === null) return;
 
     if(nativeForeach && obj.forEach === nativeForeach){
@@ -545,11 +545,11 @@
     url.replace(/(^|&)([^&=]+)=([^&]*)/g, function (a, b, key , value){
       //对url这样不可信的内容进行decode，可能会抛异常，try一下；另外为了得到最合适的结果，这里要分别try
       try {
-      key = decodeURIComponent(key);
+        key = decodeURIComponent(key);
       } catch(e) {}
 
       try {
-      value = decodeURIComponent(value);
+        value = decodeURIComponent(value);
       } catch(e) {}
 
       if (!(key in json)) {
@@ -564,9 +564,6 @@
     });
     return key ? json[key] : json;
   };
-
-
-
 
   window.XY = XY;
 
