@@ -17,7 +17,12 @@
   XY.mix(XY, {
     module: {},
 
-    use: function(){
+    /**
+     * 模块加载
+     * @param  {String}   ids 模块id
+     * @param  {Function} fn  回调函数
+     */
+    use: function(ids, fn){
 
     },
 
@@ -32,7 +37,28 @@
   });
 
 
+  /**
+   * 模块定义
+   * @param  {String} name      模块民
+   * @param  {Array} deps       模块依赖，单个可以用string传参
+   * @param  {Function} factory 工厂函数
+   */
   window.define = function(name, deps, factory){
+    if(typeof name !== 'string'){
+      if(typeof name = 'function'){
+        factory = name;
+      }
+      else{
+        factory = deps;
+        deps = name;
+      }
+      // name = 
+    }
+    else if(deps !== undefined && factory !== undefined){
+      factory = deps;
+      deps = null;
+    }
+
 
   }
 
