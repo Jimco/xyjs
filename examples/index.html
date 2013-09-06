@@ -14,6 +14,7 @@
   <script src="../src/data.js"></script>
   <script src="../src/selector.js"></script>
   <script src="../src/ajax.js"></script>
+  <script src="../src/promise.js"></script>
 </head>
 <body>
   <h1>Hello xyJS!</h1>
@@ -34,12 +35,42 @@
   </div>
 
   <script>
-    XY.EventTarget.on('demoEvt1 demoEvt2 demoEvt3', function(param){
-      console.log('Hello '+ param +' !');
-    })
-    .on('demoEvt1', function(param){
-      console.log('I\'m this second callback~');
-    });
+    // XY.EventTarget.on('demoEvt1 demoEvt2 demoEvt3', function(param){
+    //   console.log('Hello '+ param +' !');
+    // })
+    // .on('demoEvt1', function(param){
+    //   console.log('I\'m this second callback~');
+    // });
+    
+    asyncTask(1)
+      .done(function () {
+        console.log("finish");
+      })
+      .progress(function (pgs) {
+        console.log(pgs);
+      })
+      .wait(3000)
+      .then(function () {
+          return asyncTask2(111);
+      });
+
+    function asyncTask(num) {
+      var promise = XY.Promise()
+        , itv = setInterval(function(){
+          num++;
+          if (num > 100) {
+            clearInterval(itv);
+            promise.resolve();
+            return;
+          }
+          promise.notify(num);
+        }, 50);
+      return promise;
+    }
+
+    function asyncTask2(aa) {
+      alert(aa)
+    } 
 
 
 
