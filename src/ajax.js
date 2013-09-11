@@ -9,17 +9,35 @@
       url: '/',
       async: false,
       data: null,
-      success: function(e){
-        console.log(e);
-      }
+      success: function(e){ }
     };
 
   var xyAjax = {
-      
+      createXHR: function(){
+        if('ActiveXObject' in window){
+          if('XMLHttpRequest' in window) return XMLHttpRequest();
+          
+          try{
+            return new ActiveXObject( 'Microsoft.XMLHTTP' );
+          }
+          catch(_){}
+        }
+        else{
+          return new XMLHttpRequest();
+        }
+      }
+
+
     }
 
   XY.mix(XY, {
-    ajax: xyAjax
+    ajax: function(options){
+      if(!options.url) return;
+
+
+    }
+
+    
   });
 
 })(window, window.XY || {}); 
