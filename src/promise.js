@@ -161,7 +161,6 @@
       return this;
     },
 
-
     // 注册处理中进度的回调函数
     progress: function (progress) {
       if(this.thens.length === 0 || this.thens[this.thens.length - 1].progress){
