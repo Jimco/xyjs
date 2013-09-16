@@ -47,8 +47,19 @@
         else{
           return new XMLHttpRequest();
         }
-      }
+      },
 
+      handleReadyState: function(){
+
+      },
+
+      setHeaders: function(){
+
+      },
+
+      getRequest: function(){
+
+      }
 
     }
 
