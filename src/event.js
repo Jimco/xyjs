@@ -10,12 +10,36 @@ XY.install('Event', function(XY){
     , W = window
     , isString = XY.isString
     , isNodelist = XY.isNodelist
-    , __add = function(elem, type, handle){
+    , __eventCompat = function(event){
+        var type = event.type;
+        if(type == 'DOMMouseScroll' || type == 'mousewheel'){
+          event.delta = (event.wheelDelta) ? event.wheelDelta / 120 : -(event.detail || 0) / 3;
+        }
+        
+        if(event.srcElement && !event.target){
+          event.target = event.srcElement;  
+        }
+        if(!event.preventDefault && event.returnValue !== undefined){
+          event.preventDefault = function() {
+            event.returnValue = false;
+          };
+        }
+        // ...更多兼容性处理
+        return event;
+      }
+    , __add = function(elem, type, handle, capture){
         if(elem.addEventListener){
-          elem.addEventListener(type, handle, false);
-        }else if(elem.attachEvent){
-          elem.attachEvent('on'+type, handle);
-        }else{
+          elem.addEventListener(type, function(event){
+            handle.call(this, __eventCompat(event));
+          }, capture || false);
+        }
+        else if(elem.attachEvent){
+          elem.attachEvent('on' + type, function(event){
+            event = event || window.event;
+            handle.call(this, __eventCompat(event));
+          });
+        }
+        else{
           elem['on'+type] = handle;
         }
       }
@@ -26,15 +50,22 @@ XY.install('Event', function(XY){
          * @param  {String} type     事件类型
          * @param  {Function} handle 事件处理函数
          */
-        addEvent: function(el, type, handle){
+        addEvent: function(el, type, handle, capture){
           if(el.addEventListener){
-            el.addEventListener(type, handle, false);
-          }else if(el.attachEvent){
-            el.attachEvent('on' + type, function(){
-              handle.call(el);
+            el.addEventListener(type, function(event){
+              handle.call(this, __eventCompat(event));
+            }, capture || false);
+          }
+          else if(el.attachEvent){
+            el.attachEvent('on' + type, function(event){
+              event = event || window.event;
+              handle.call(this, __eventCompat(event));
             });
-          }else{
-            el['on' + type] = handle;
+          }
+          else{
+            el['on'+type] = function(event){
+              handle.call(this, __eventCompat(event));
+            };
           }
         },
 
@@ -44,15 +75,21 @@ XY.install('Event', function(XY){
          * @param  {String} type     事件类型
          * @param  {Function} handle 事件处理函数
          */
-        removeEvent: function(el, type, handle){
+        removeEvent: function(el, type, handle, capture){
           if(el.removeEventListener){
-            el.removeEventListener(type, handle, false);
-          }else if(el.detachEvent){
+            el.removeEventListener(type, function(event){
+              handle.call(this, __eventCompat(event));
+            }, capture || false);
+          }
+          else if(el.detachEvent){
             el.detachEvent('on' + type, function(){
-              handle.call(el);
+              handle.call(this, __eventCompat(event));
             });
-          }else{
-            el['on' + type] = handle;
+          }
+          else{
+            el['on' + type] = function(event){
+              handle.call(this, __eventCompat(event));
+            };
           }
         },
 
