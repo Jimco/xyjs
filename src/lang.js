@@ -194,7 +194,7 @@
     return xml;
   };
   
-  XY.encodeJSON = function( data ) {
+  XY.JSONparse = function( data ) {
     if ( !data || !XY.isString(data) ){
       return null;
     }
@@ -214,7 +214,7 @@
     }
   };
 
-  XY.decodeJSON = function (json) {
+  XY.JSONstringify = function (json) {
     if (window.JSON && window.JSON.stringify) {
       return JSON.stringify(json);
     }
