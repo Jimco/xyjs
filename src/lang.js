@@ -361,7 +361,7 @@
     return function (url , callback , options){
       options = options || {};
       var funName = "XYJsonp" + seq++
-        , callbackReplacer = options .callbackReplacer || /%callbackfun%/ig;
+        , callbackReplacer = options.callbackReplacer || /%callbackfun%/ig;
 
       window[funName] = function (data){
         if(callback) callback(data);
