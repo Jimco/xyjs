@@ -172,6 +172,7 @@
       return this;
     },
 
+    // always(fn) 等同于 then(fn, fn) , 也等同于 done(fn).fail(fn) 
     always: function (alwaysCB) {
       if(this.thens.length === 0 || this.thens[this.thens.length - 1].alwaysCB || this.thens[this.thens.length - 1].done || this.thens[this.thens.length - 1].fail){
           this.thens.push({ alwaysCB: alwaysCB });
