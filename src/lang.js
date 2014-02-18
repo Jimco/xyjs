@@ -565,6 +565,17 @@
     return key ? json[key] : json;
   };
 
+  /** 
+   * 将所有tag标签消除，即去除<tag>，以及</tag>
+   * @method stripTags
+   * @static
+   * @param {String} s 字符串
+   * @return {String} 返回处理后的字符串
+   */
+  XY.stripTags = function(s) {
+    return s.replace(/<[^>]*>/gi, '');
+  };
+
   window.XY = XY;
 
 })(window, window.XY || {});
