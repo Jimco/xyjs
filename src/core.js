@@ -6,6 +6,7 @@
 ;(function(window, XY, undefined){
 
   var me = this
+    , moduleCache = {}    // 模块缓存对象
     , eventSplitter = /\s+/
     // 浏览器判定的正则    
     , rUA = [ /ms(ie)\s(\d\.\d)/,                       // IE
@@ -149,6 +150,26 @@
         root = root[nameI];
       }
       return root;
+    },
+
+    /**
+     * AMD 风格模块化
+     * @param  {String}   module       模块名
+     * @param  {Array}   dependencies  当前模块所依赖的模块
+     * @param  {Function} fn           当前模块主题函数
+     */
+    define: function(module, dependencies, fn){
+      if(typeof define === 'function' && define.amd){
+        define(module, dependencies, fn);
+      }
+      else{
+        if(dependencies && dependencies.length){
+          for(var i = 0, l = dependencies.length; i < l; i++){
+            dependencies[i] = moduleCache[dependencies[i]];
+          }
+        }
+        moduleCache[module] = fn.apply(this, dependencies || []);
+      }
     },
 
     /**
