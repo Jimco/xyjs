@@ -93,9 +93,52 @@
   });
 
   XY.mix(Ajax.prototype, {
+    url: '',
+    method: 'get',
+    async: true,
+    user: '',
+    pwd: '',
+    requestHeader: null,
+    data: '',
+    useLock: 0,
+    timeout: 30000, // 超时时间
+    isLocked: 0, 
+    state: Ajax.STATE_INIT, // 还未开始请求
+
+    send: function(){
+
+    },
+
+    isSuccess: function(){
+
+    },
+
+    isProcessing: function(){
+
+    },
+
+    get: function(){
+
+    },
+
+    post: function(){
+
+    },
+
+    cancel: function(){
+
+    },
+
+    _initialize: function(){
+
+    },
+
+    _checkTimeout: function(){
+      
+    }
 
   });
 
-  
+
 
 })(window, window.XY || {}); 
