@@ -183,27 +183,63 @@
         return me.requester.responseText;
       }
 
-
     },
 
+    /** 
+     * isSuccess(): 判断现在的状态是否是“已请求成功”
+     * @returns {boolean} : 返回XMLHttpRequest是否成功请求。
+     */
     isSuccess: function(){
-
+      var status = this.requester.status;
+      return !status || (status >= 200 && status < 300) || status == 304;
     },
 
+    /** 
+     * isProcessing(): 判断现在的状态是否是“正在请求中”
+     * @returns {boolean} : 返回XMLHttpRequest是否正在请求。
+     */
     isProcessing: function(){
-
+      var state = this.requester ? this.requester.readyState : 0;
+      return state > 0 && state < 4;
     },
 
-    get: function(){
-
+    /** 
+     * get(url,data): 用get方式发送请求
+     * @param {string} url: 请求的url
+     * @param {string|jason|FormElement} data: 可以是字符串，也可以是Json对象，也可以是FormElement
+     * @returns {void} : 。
+     * @see : send 。
+     */
+    get: function(url, data){
+      this.send(url, 'get', data);
     },
 
-    post: function(){
-
+    /** 
+     * get(url,data): 用post方式发送请求
+     * @param {string} url: 请求的url
+     * @param {string|jason|FormElement} data: 可以是字符串，也可以是Json对象，也可以是FormElement
+     * @returns {void} : 。
+     * @see : send 。
+     */
+    post: function(url, data){
+      this.send(url, 'post', data);
     },
 
+    /** 
+     * cancel(): 取消请求
+     * @returns {boolean}: 是否有取消动作发生（因为有时请求已经发出，或请求已经成功）
+     */
     cancel: function(){
+      var me = this;
+      if(me.requester && me.isProcessing()){
+        me.state = Ajax.STATE_CANCEL;
+        me.requester.abort();
+        me._execComplete();
+        me.fire('cancel');
+        return true;
+      }
 
+      return false;
     },
 
     _initialize: function(){
