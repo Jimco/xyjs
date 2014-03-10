@@ -4,6 +4,10 @@
  */
 (function(window, XY){
 
+  function encodeURIForm(){}
+
+  function encodeURIJson(){}
+
   function Ajax(options){
     this.options = options;
     this._initialize();
@@ -83,11 +87,15 @@
     },
 
     get: function(url, data, callback){
-
+      var args = [].slice.call(arguments, 0);
+      args.push('get');
+      return Ajax.request.apply(null, args);
     },
 
     post: function(url, data, callback){
-
+      var args = [].slice.call(arguments, 0);
+      args.push('post');
+      return Ajax.request.apply(null, args);
     }
 
   });
@@ -100,12 +108,81 @@
     pwd: '',
     requestHeader: null,
     data: '',
+    /*
+     * 是否给请求加锁，如果加锁则必须在之前的请求完成后才能进行下一次请求。
+     * 默认不加锁。
+     */
     useLock: 0,
     timeout: 30000, // 超时时间
-    isLocked: 0, 
+    isLocked: 0, //处于锁定状态
     state: Ajax.STATE_INIT, // 还未开始请求
 
-    send: function(){
+    send: function(url, method, data){
+      var me = this;
+      if(me.isLocked){
+        throw new Error('Locked');
+      }
+      else if(me.isProcessing){
+        me.cancel();
+      }
+
+      var requester = me.requester;
+      if(!requester){
+        requester = me.requester = Ajax.getXHR();
+        if(!requester){
+          throw new Error('Fail to get HTTPRequester.');
+        }
+      }
+
+      url = url || me.url;
+      url = url.split('#')[0];
+      method = (method || me.method || '').toLowerCase();
+      if(method != 'post') method = 'get';
+      data = data || me.data;
+
+      if(typeof data == 'object'){
+        if(data.tagName == 'FORM') data = encodeURIForm(data); // data 是 Form HTMLElement
+        else data = encodeURIJson(data); // data 是 json 数据
+      }
+
+      if(data && method != 'post') url += (url.indexOf('?') != -1 ? '&' : '?') + data;
+      if(me.user) requester.open(method, url, me.async, me.user, me.pwd);
+      else requester.open(method, url, me.async);
+
+      // 设置请求头
+      if(var i in me.requestHeader){
+        requester.setRequestHeader(i, me.requestHeader[i]);
+      }
+
+      me.isLocked = 0;
+      me.state = Ajax.STATE_INIT;
+
+      if(me.async){
+        me._sendTime = new Date();
+        if(me.useLock) me.isLocked = 1;
+        this.requester.onreadystatechange = function(){
+          var state = me.requester.readyState;
+          if(state === 4){
+            me._execComplete();
+          }
+        };
+
+        me._checkTimeout();
+      }
+
+      if(method == 'post'){
+        if(!data) data = ' ';
+        requester.send(data);
+      }
+      else{
+        requester.send(null);
+      }
+
+      if(!me.async){
+        me._execComplete();
+        return me.requester.responseText;
+      }
+
 
     },
 
@@ -135,7 +212,9 @@
 
     _checkTimeout: function(){
       
-    }
+    },
+
+    _execComplete: function(){}
 
   });
 
