@@ -198,7 +198,8 @@
         doc.removeEventListener('DOMContentLoaded', arguments.callee, false);
         handle();
       }, false);
-    }else if(doc.attachEvent){
+    }
+    else if(doc.attachEvent){
       doc.attachEvent('onreadystatechange', function(){
         if(doc.readyState === 'interactive' || doc.readyState === 'complete'){
           doc.detachEvent('onreadystatechange', arguments.callee);
