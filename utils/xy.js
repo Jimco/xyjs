@@ -305,37 +305,61 @@
   }
 
   /**
-   * jsonp跨域
-   * @param  {String}   url      跨域请求的url
-   * @param  {Object}   data     请求数据
-   * @param  {Function} callback 回调函数
+   * jsonp 跨域
+   * options:
+   * {
+   *   url: '',               // 请求的 url
+   *   data: {},              // 相关参数
+   *   callback: 'callback',  // 回调函数名 (可选)
+   *   time: 10000,           // 超时时间 (可选)
+   *   charset: 'UTF-8',      // 编码 (可选)
+   *   success: func,         // 请求成功执行的回调函数
+   *   fail: func             // 请求超时执行的回调函数
+   * }
    */
-  XY.getJSONP = function(url, data, callback){
-    var paramsUrl = ''
-      , jsonp = 'jsonp' + new Date().getTime();
-    for(var key in data){
-      paramsUrl += "&" + key + "=" + encodeURIComponent(data[key]);
-    }
-    url += paramsUrl + '&callback=' + jsonp;
-    window[jsonp] = function(data){
-      window[jsonp] = undefined;
-      try{
-        delete window[jsonp];
-      }catch(e){}
+  XY.loadJsonp = (function(){
+    var seq = new Date * 1;
+    return function(options){
+      var funcName = 'XYJsonp' + seq++
+        , head = document.getElementsByTagName('head')[0]
+        , script = document.createElement('script')
+        , url = options.url;
 
-      if(head){
-        head.removeChild(script);
+      options.callback ? (options.data[options.callback] = funcName) : (options.data.callback = funcName);
+
+      for(var key in options.data){
+        url += (/\?/.test( url ) ? '&' : '?') + encodeURIComponent(key) + '=' + encodeURIComponent(options.data[key]);
       }
-      callback(data);
-    };
 
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.charset = "UTF-8";
-    script.src = url;
-    head.appendChild(script);
-    return true;
-  }
+      window[funName] = function(data){
+        window[funName] = undefined;
+        try{
+          delete window[funName];
+        }catch(e){}
+
+        head.removeChild(script);
+        clearTimeout(script.timer);
+        options.success && options.success(data);
+      };
+
+      if(options.time){
+        script.timer = setTimeout(function(){
+          window[funcName] = undefined;
+          try{
+            delete window[funName];
+          }catch(e){}
+
+          head.removeChild(script);
+          options.fail && options.fail({ msg: '请求超时'});
+
+        }, options.time)
+      }
+
+      script.charset = "UTF-8";
+      script.src = url;
+      head.appendChild(script);
+    }
+  }());
 
   /**
    * 动态加载外部js文件
