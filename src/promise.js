@@ -24,13 +24,28 @@
     },
 
     complete: function(state, result){
-      while(this.pending[0]){
-        this.pending.shift()[type](result);
+      // while(this.pending[0]){
+      //   this.pending.shift()[state](result);
+      // }
+      var me = this
+        , t;
+
+      while( t = me.pending.shift() ){
+        if(typeof t === 'number'){
+          setTimeout(function(){
+            var prms = new Promise(me.thens);
+            prms[state](result);
+          }, t);
+        }
+        else{
+          t[state](result);
+        }
       }
     },
 
-    delay: function(){
-
+    delay: function(timeout){
+      this.pending.push(+timeout);
+      return this;
     }
   }
 
