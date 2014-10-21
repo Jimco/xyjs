@@ -265,7 +265,7 @@
           tail = node.tail;
           while( (node = node.next) !== tail ){
             cb = node.callback;
-            ctc = node.context;
+            ctx = node.context;
 
             if( (callback && cb !== callback) || (context && ctx !== context) ){
               this.on(evt, cb, ctx);
