@@ -16,7 +16,8 @@
     , toString = ObjProto.toString
     , nativeForeach = Array.prototype.forEach
     , breaker = {}
-    , tplCache = {};
+    , tplCache = {}
+    , TimerRes = {};
 
   /**
    * console 兼容
@@ -622,6 +623,57 @@
   XY.stripTags = function(s) {
     return s.replace(/<[^>]*>/gi, '');
   };
+
+  /**
+   * 原生 setInterval 封装
+   * @param {Function} fn      回调函数(必须)
+   * @param {Number}   timeout 时间间隔(必须)
+   * @param {String}   ns      命名空间(可选)
+   */
+  XY.setInterval = function(fn, timeout, ns) {
+    if(!ns) ns = 'g';
+    if(!TimerRes[ns]) TimerRes[ns] = [];
+    TimerRes[ns].push(setInterval(fn, timeout));
+  }
+
+  /**
+   * 原生 clearInterval 封装
+   * @param  {[type]} rid 由 setInterval() 返回的 ID 值
+   * @param  {[type]} ns  命名空间
+   * @return {[type]}     
+   */
+  XY.clearInterval = function(rid, ns) {
+    var k, v, k1, i, len, i1, len1, resArr, j;
+
+    if(typeof rid == 'number') {
+      for(k in TimerRes) {
+        v = TimerRes[i];
+        for(i = 0, len = v.length; i < len; i++) {
+          if(rid == v[i]) {
+            v.splice(i, 1);
+            clearInterval(rid);
+            return;
+          }
+        }
+      }
+    }
+
+    if(typeof rid == 'string') {
+      ns = rid;
+      resArr = TimerRes[ns];
+      j = resArr.length;
+      while(j != 0) {
+        XY.clearInterval(resArr[resArr.length - 1]);
+      }
+    }
+
+    if(arguments.length == 0) {
+      for(k1 in TimerRes) {
+        XY.clearInterval(k1);
+      }
+    }
+
+  }
 
   window.XY = XY;
 

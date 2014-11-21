@@ -124,7 +124,7 @@
   XY.template = function(html , data , reg){
     var reg = reg || /\{([\w-]+)\}/g;
     return html.replace( reg, function( m , name ){
-      console.log(m +'-'+ name);
+      // console.log(m +'-'+ name);
       if( data[name] !== undefined ){
         var ret ;
         if(data[name] instanceof Function){
