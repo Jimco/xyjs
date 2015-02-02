@@ -572,6 +572,26 @@
     
     return data ? fn( data ) : fn;
   };
+
+  /**
+   * 简单路由
+   */
+  XY.miniRoute = function() {
+      var args = arguments;
+
+      for(var i = 0, l = args.length; i < l; i++) {
+          var item = args[i],
+              path = item['path'],
+              func = item['func'];
+
+          if(path && func) {
+              var params = pathname.match(path);
+              if(params) {
+                  func.apply(item, params);
+              }
+          }
+      }
+  };
   
   // 首字母大写转换
   XY.capitalize = function( str ){
