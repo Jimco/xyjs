@@ -314,6 +314,11 @@
     }
   };
 
+  XY.PATH = (function() {
+    var sTags = document.getElementsByTagName('script');
+    return sTags[sTags.length - 1].src.replace(/(^|\/)[^\/]+\/[^\/]+$/, '$1');
+  });
+
   /**
    * 异步加载脚本
    * @method loadJs
