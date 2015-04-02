@@ -314,6 +314,10 @@
     }
   };
 
+  /**
+   * @property {string} PATH 脚本库的运行路径
+   * @type string
+   */
   XY.PATH = (function() {
     var sTags = document.getElementsByTagName('script');
     return sTags[sTags.length - 1].src.replace(/(^|\/)[^\/]+\/[^\/]+$/, '$1');
@@ -698,6 +702,19 @@
       }
     }
 
+  }
+
+
+  /**
+   * 抛出异常
+   * @method error
+   * @static
+   * @param { obj } 异常对象
+   * @param { type } Error (Optional) 错误类型，默认为Error
+   */
+  XY.error = function(obj, type) {
+    type = type || Error;
+    throw new type(obj);
   }
 
   window.XY = XY;
